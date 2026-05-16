@@ -1,0 +1,2347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma Cinémathèque</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0b0b14; font-family: 'Palatino Linotype', Palatino, serif; color: #ddd6c8; min-height: 100vh; }
+
+  #header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(11,11,20,0.97);
+    border-bottom: 1px solid #1c1c2e;
+    padding: 20px 18px 14px;
+    backdrop-filter: blur(10px);
+  }
+  .header-inner { max-width: 720px; margin: 0 auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .header-center { text-align: center; flex: 1; }
+  .header-label { font-size: 13px; letter-spacing: 5px; color: #E8C547; font-family: monospace; text-transform: uppercase; margin-bottom: 3px; }
+  .header-title { font-size: 26px; font-weight: 400; letter-spacing: -0.5px; color: #f0e8d8; }
+  .counter-box { background: #13131f; border: 1px solid #1c1c2e; border-radius: 10px; padding: 8px 14px; text-align: center; min-width: 90px; }
+  .counter-num { font-size: 20px; font-weight: 700; font-family: monospace; color: #E8C547; }
+  .counter-total { color: #333; font-size: 12px; }
+  .counter-label { font-size: 8px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin: 3px 0 5px; }
+  .counter-bar-bg { height: 3px; background: #1a1a2e; border-radius: 2px; width: 60px; margin: 0 auto; }
+  .counter-bar { height: 100%; background: linear-gradient(90deg,#E8C547,#e07c3a); border-radius: 2px; transition: width 0.4s; }
+
+  #search {
+    width: 100%; background: #13131f; border: 1px solid #1c1c2e;
+    border-radius: 8px; padding: 9px 13px; color: #ddd6c8;
+    font-size: 13px; font-family: inherit; outline: none; margin-bottom: 12px;
+    transition: border 0.2s;
+  }
+  #search:focus { border-color: #E8C547; }
+
+  .tabs { display: flex; gap: 8px; }
+  .tab-btn {
+    flex: 1; padding: 8px 0; border-radius: 7px; font-size: 13px;
+    cursor: pointer; font-family: inherit; transition: all 0.2s; border: 1px solid #1c1c2e;
+    background: #13131f; color: #777; font-weight: 400;
+  }
+  .tab-btn.active { background: #E8C547; color: #0b0b14; border-color: #E8C547; font-weight: 700; }
+
+  /* À Découvrir */
+  .dec-form { background:#13131f; border:1px solid #1c1c2e; border-radius:12px; padding:16px; margin-bottom:20px; }
+  .dec-form-title { font-size:13px; letter-spacing:2px; color:#E8C547; text-transform:uppercase; margin-bottom:12px; }
+  .dec-item { display:flex; align-items:flex-start; gap:12px; padding:14px; background:#13131f; border:1px solid #1c1c2e; border-radius:10px; margin-bottom:8px; }
+  .dec-type-badge { font-size:11px; background:#1c1c2e; border-radius:6px; padding:4px 8px; white-space:nowrap; color:#aaa; }
+  .dec-info { flex:1; }
+  .dec-title-text { font-size:15px; color:#f0e8d8; margin-bottom:4px; }
+  .dec-note-text { font-size:12px; color:#888; font-style:italic; margin-bottom:4px; }
+  .dec-date { font-size:10px; color:#444; letter-spacing:1px; }
+  .dec-remove { background:none; border:none; color:#555; font-size:14px; cursor:pointer; padding:2px 6px; border-radius:4px; transition:color 0.2s; }
+  .dec-remove:hover { color:#f87171; }
+  .sl-chip-upcoming { cursor: default !important; opacity: 0.4; }
+
+  #content { max-width: 720px; margin: 0 auto; padding: 16px 16px 60px; }
+
+  .genre-block { margin-bottom: 28px; }
+  .genre-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    padding-bottom: 7px; border-bottom: 1px solid #1c1c2e;
+  }
+  .genre-name { flex: 1; font-size: 14px; font-weight: 600; color: #f0e8d8; }
+  .genre-count { font-size: 11px; font-family: monospace; }
+  .genre-bar-bg { width: 44px; height: 3px; background: #1a1a2e; border-radius: 2px; }
+  .genre-bar { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+  .saga-block { margin-bottom: 10px; background: #13131f; border: 1px solid #1c1c2e; border-radius: 10px; overflow: hidden; }
+  .saga-header {
+    padding: 8px 14px; background: #0f0f1c; border-bottom: 1px solid #1c1c2e;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .saga-name { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #E8C547; font-family: monospace; }
+  .saga-count { font-size: 10px; color: #444; font-family: monospace; }
+
+  .episode-row {
+    display: flex; align-items: center; gap: 12px; padding: 8px 14px;
+    border-bottom: 1px solid #161626; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .episode-row:last-child { border-bottom: none; }
+  .episode-row:hover { background: rgba(255,255,255,0.03); }
+  .episode-row.seen { background: rgba(74,222,128,0.05); }
+  .episode-row.seen:hover { background: rgba(74,222,128,0.08); }
+  .episode-row.soon { cursor: default; }
+
+  .poster-wrap {
+    width: 36px; height: 54px; border-radius: 4px; overflow: hidden;
+    flex-shrink: 0; background: #1a1a2e;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid #2a2a3e; font-size: 16px;
+  }
+  .poster-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .poster-wrap.loading { animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:0.7} }
+
+  .checkbox {
+    width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+    border: 2px solid #333; background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .checkbox.checked { border-color: #4ade80; background: #4ade80; }
+  .checkbox.disabled { border-color: #222; }
+  .checkmark { font-size: 11px; color: #0b0b14; font-weight: 900; display: none; }
+  .checkbox.checked .checkmark { display: block; }
+
+  .ep-label { font-size: 13px; flex: 1; color: #c0b8a8; transition: color 0.15s; }
+  .ep-label.seen { color: #4ade80; text-decoration: line-through; }
+  .ep-label.soon { color: #2a2a4a; font-style: italic; }
+
+  .soon-badge {
+    font-size: 9px; color: #e07c3a; background: #1e1020;
+    padding: 2px 7px; border-radius: 4px; font-family: monospace; letter-spacing: 1px;
+  }
+
+  .empty { text-align: center; padding: 60px 0; color: #333; }
+  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-text { font-size: 14px; }
+  .empty-text span { color: #E8C547; }
+
+  /* CLASSEMENT */
+  .top-section { margin-bottom: 32px; }
+  .top-section-title { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #E8C547; font-family: monospace; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #1c1c2e; }
+  .top-slot {
+    display: flex; align-items: center; gap: 12px;
+    background: #13131f; border: 1px solid #1c1c2e; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 8px; min-height: 72px;
+    transition: border-color 0.2s;
+  }
+  .top-slot.filled { border-color: #2a2a4a; }
+  .top-rank {
+    font-size: 22px; font-weight: 700; font-family: monospace;
+    width: 36px; text-align: center; flex-shrink: 0;
+  }
+  .rank-1 { color: #FFD700; }
+  .rank-2 { color: #C0C0C0; }
+  .rank-3 { color: #CD7F32; }
+  .rank-other { color: #444; }
+  .top-poster { width: 36px; height: 54px; border-radius: 4px; overflow: hidden; flex-shrink: 0; background: #1a1a2e; border: 1px solid #2a2a3e; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .top-poster img { width: 100%; height: 100%; object-fit: cover; }
+  .top-info { flex: 1; min-width: 0; }
+  .top-title { font-size: 13px; color: #f0e8d8; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top-empty-label { font-size: 12px; color: #333; font-style: italic; }
+  .top-remove { background: none; border: none; color: #444; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: color 0.2s; }
+  .top-remove:hover { color: #e05c2a; }
+  .top-add-btn {
+    width: 100%; padding: 10px; background: transparent; border: 1px dashed #2a2a3e;
+    border-radius: 8px; color: #444; font-size: 12px; cursor: pointer;
+    font-family: inherit; transition: all 0.2s; margin-top: 4px;
+  }
+  .top-add-btn:hover { border-color: #E8C547; color: #E8C547; }
+
+  /* ── FORMAT LIGNE (Animés + Séries) ── */
+  .season-row {
+    display: flex; align-items: center; gap: 0;
+    padding: 9px 14px; border-bottom: 1px solid #161626;
+    flex-wrap: wrap; row-gap: 6px;
+  }
+  .season-row:last-child { border-bottom: none; }
+  .season-row:hover { background: rgba(255,255,255,0.03); }
+
+  /* Affiche à gauche */
+  .sl-poster {
+    width: 32px; height: 48px; border-radius: 4px; overflow: hidden;
+    flex-shrink: 0; background: #1a1a2e; border: 1px solid #2a2a3e;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    margin-right: 10px;
+  }
+  .sl-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .sl-poster.loading { animation: pulse 1.5s infinite; }
+
+  /* Nom de l'œuvre */
+  .sl-title {
+    font-size: 13px; color: #c0b8a8; flex-shrink: 0;
+    margin-right: 10px; white-space: nowrap;
+  }
+
+  /* Groupe de saisons (cases à cocher) */
+  .sl-seasons { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1; }
+
+  /* Chip saison individuel */
+  .sl-chip {
+    display: flex; align-items: center; gap: 4px;
+    cursor: pointer; padding: 3px 7px; border-radius: 6px;
+    background: #13131f; border: 1px solid #2a2a3e;
+    transition: all 0.15s; user-select: none;
+  }
+  .sl-chip:hover { border-color: #E8C547; }
+  .sl-chip.checked { background: rgba(74,222,128,0.1); border-color: #4ade80; }
+  .sl-chip-label { font-size: 10px; color: #777; font-family: monospace; }
+  .sl-chip.checked .sl-chip-label { color: #4ade80; }
+  .sl-chip-box {
+    width: 12px; height: 12px; border-radius: 3px;
+    border: 1.5px solid #444; background: transparent;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .sl-chip.checked .sl-chip-box { border-color: #4ade80; background: #4ade80; }
+  .sl-chip-check { font-size: 8px; color: #0b0b14; font-weight: 900; display: none; }
+  .sl-chip.checked .sl-chip-check { display: block; }
+
+  /* Zone statut à droite */
+  .sl-status { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-left: 8px; gap: 3px; }
+
+  .status-badge {
+    font-size: 9px; font-family: monospace; letter-spacing: 0.8px;
+    padding: 3px 8px; border-radius: 5px; white-space: nowrap;
+    text-align: center; font-weight: 700;
+  }
+  .status-termine   { background: #0d2010; color: #4ade80;  border: 1px solid #1a4020; }
+  .status-en-cours  { background: #0d1520; color: #60a5fa;  border: 1px solid #1a3050; }
+  .status-en-attente{ background: #1a1505; color: #facc15;  border: 1px solid #3a3010; }
+  .status-inacheve  { background: #1a0808; color: #f87171;  border: 1px solid #3a1010; }
+
+  .sl-date { font-size: 9px; color: #60a5fa; font-family: monospace; white-space: nowrap; }
+  .sl-proba { font-size: 9px; color: #888; font-family: monospace; white-space: nowrap; }
+  .proba-bar-bg { height: 3px; background: #1a1a2e; border-radius: 2px; margin-top: 2px; width: 70px; }
+  .proba-bar { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #13131f; border: 1px solid #2a2a3e; border-radius: 12px; padding: 20px; width: 90%; max-width: 480px; max-height: 80vh; display: flex; flex-direction: column; }
+  .modal-title { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #E8C547; font-family: monospace; margin-bottom: 12px; }
+  .modal-search { width: 100%; background: #0b0b14; border: 1px solid #2a2a3e; border-radius: 8px; padding: 9px 13px; color: #ddd6c8; font-size: 13px; font-family: inherit; outline: none; margin-bottom: 12px; }
+  .modal-search:focus { border-color: #E8C547; }
+  .modal-list { overflow-y: auto; flex: 1; }
+  .modal-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 7px; cursor: pointer; transition: background 0.15s; }
+  .modal-item:hover { background: rgba(255,255,255,0.05); }
+  .modal-item-poster { width: 28px; height: 42px; border-radius: 3px; overflow: hidden; background: #1a1a2e; border: 1px solid #2a2a3e; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .modal-item-poster img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-item-label { font-size: 13px; color: #c0b8a8; }
+  .modal-close { background: none; border: 1px solid #2a2a3e; border-radius: 7px; color: #777; padding: 8px 16px; cursor: pointer; font-family: inherit; margin-top: 12px; width: 100%; transition: all 0.2s; }
+  .modal-close:hover { border-color: #E8C547; color: #E8C547; }
+
+  /* ── TOGGLE VUE ── */
+  .view-toggle { display:flex; gap:0; border:1px solid #2a2a3e; border-radius:7px; overflow:hidden; }
+  .view-btn { padding:5px 10px; background:transparent; border:none; color:#555; cursor:pointer; font-size:14px; transition:all 0.15s; font-family:inherit; }
+  .view-btn.active { background:#1c1c2e; color:#E8C547; }
+  .view-btn:hover:not(.active) { color:#aaa; }
+
+  /* ── MODE CARTE ── */
+  .cards-grid-wrap { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
+  .c-card { background:#13131f; border:1px solid #1c1c2e; border-radius:10px; overflow:hidden; transition:transform 0.15s,border-color 0.15s; }
+  .c-card:hover { transform:translateY(-2px); border-color:#2a2a3e; }
+  .c-poster { width:100%; aspect-ratio:2/3; background:#0f0f1c; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+  .c-poster img { width:100%; height:100%; object-fit:cover; display:block; }
+  .c-poster-icon { font-size:28px; opacity:0.15; }
+  .c-status-badge { position:absolute; top:5px; left:5px; font-size:8px; font-weight:700; padding:2px 5px; border-radius:4px; font-family:monospace; letter-spacing:0.5px; text-transform:uppercase; }
+  .csb-termine { background:#0d2010; color:#4ade80; border:1px solid #1a4020; }
+  .csb-en-cours { background:#0d1520; color:#60a5fa; border:1px solid #1a3050; }
+  .csb-en-attente { background:#1a1505; color:#facc15; border:1px solid #3a3010; }
+  .csb-inacheve { background:#1a0808; color:#f87171; border:1px solid #3a1010; }
+  .c-body { padding:7px 8px 9px; }
+  .c-title { font-size:11px; color:#c0b8a8; line-height:1.3; margin-bottom:5px; min-height:28px; }
+  .c-chips { display:flex; gap:3px; flex-wrap:wrap; }
+  .c-chip { font-size:9px; padding:2px 5px; border:1px solid #2a2a3e; border-radius:4px; color:#555; cursor:pointer; transition:all 0.1s; font-family:monospace; user-select:none; }
+  .c-chip:hover { border-color:#E8C547; color:#E8C547; }
+  .c-chip.done { background:rgba(74,222,128,0.12); border-color:#4ade80; color:#4ade80; }
+  .c-chip.locked { opacity:0.3; cursor:default; border-style:dashed; }
+  .c-chip.locked:hover { border-color:#2a2a3e; color:#555; }
+  .c-chip.film-chip { border-color:#E8C547; color:#E8C547; font-size:8px; }
+  .c-chip.film-chip.done { background:rgba(74,222,128,0.12); border-color:#4ade80; color:#4ade80; }
+  .c-genre-header { grid-column:1/-1; display:flex; align-items:center; gap:10px; margin-bottom:4px; margin-top:8px; padding-bottom:7px; border-bottom:1px solid #1c1c2e; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="view-toggle" id="view-toggle" style="display:none;">
+        <button class="view-btn active" id="btn-liste" onclick="setView('liste')" title="Vue liste">☰</button>
+        <button class="view-btn" id="btn-carte" onclick="setView('carte')" title="Vue carte">⊞</button>
+      </div>
+      <div class="header-center">
+        <div class="header-label">Ma Cinémathèque</div>
+        <div class="header-title">Films &amp; Séries</div>
+      </div>
+      <div class="counter-box">
+        <div class="counter-num"><span id="done-count">0</span><span class="counter-total">/<span id="total-count">0</span></span></div>
+        <div class="counter-label">vus</div>
+        <div class="counter-bar-bg"><div class="counter-bar" id="global-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <input type="text" id="search" placeholder="🔍  Rechercher..." oninput="filterContent()" />
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('films', this)">🎬 FILMS</button>
+      <button class="tab-btn" onclick="switchTab('series', this)">📺 SÉRIES</button>
+      <button class="tab-btn" onclick="switchTab('anime', this)">🎌 ANIMÉS</button>
+      <button class="tab-btn" onclick="switchTab('classement', this)">🏆 TOP 10</button>
+      <button class="tab-btn" onclick="switchTab('decouvrir', this)">🎯 À DÉCOUVRIR</button>
+    </div>
+  </div>
+</div>
+
+<div id="content"></div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">Choisir un film / série</div>
+    <input class="modal-search" id="modal-search" placeholder="🔍 Rechercher..." oninput="filterModal()" />
+    <div class="modal-list" id="modal-list"></div>
+    <button class="modal-close" onclick="closeModal()">Annuler</button>
+  </div>
+</div>
+
+<script>
+const TMDB_KEY = '29a509e67b8d799ab621f249c7163a78';
+const TMDB_IMG = 'https://image.tmdb.org/t/p/w92';
+
+let posterCache = {};
+try { posterCache = JSON.parse(localStorage.getItem('cinePosterCache') || '{}'); } catch(e) {}
+
+async function fetchPoster(searchTitle, isSeries) {
+  const cacheKey = searchTitle;
+  if (posterCache[cacheKey] !== undefined) return posterCache[cacheKey];
+  try {
+    const type = isSeries ? 'tv' : 'movie';
+    const url = `https://api.themoviedb.org/3/search/${type}?api_key=${TMDB_KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const path = data.results?.[0]?.poster_path || null;
+    const full = path ? TMDB_IMG + path : '';
+    posterCache[cacheKey] = full;
+    try { localStorage.setItem('cinePosterCache', JSON.stringify(posterCache)); } catch(e) {}
+    return full;
+  } catch { return ''; }
+}
+
+// ── GESTION VUE LISTE / CARTE ──
+let currentView = 'liste';
+try { currentView = localStorage.getItem('cineView') || 'liste'; } catch(e) {}
+
+function setView(v) {
+  currentView = v;
+  try { localStorage.setItem('cineView', v); } catch(e) {}
+  document.getElementById('btn-liste').classList.toggle('active', v === 'liste');
+  document.getElementById('btn-carte').classList.toggle('active', v === 'carte');
+  if (activeTab === 'anime') renderAnime();
+  else if (activeTab === 'films' || activeTab === 'series') render();
+}
+
+function showViewToggle(show) {
+  document.getElementById('view-toggle').style.display = show ? 'flex' : 'none';
+}
+
+const DATA = {
+  films: {
+    "🚗 Action / Aventure": [
+      { saga: "Au Cœur de l'Océan", items: [{label:"Au Cœur de l'Océan", search:"In the Heart of the Sea 2015"}]},
+      { saga: "Les 3 Mousquetaires (2011)", items: [{label:"Les 3 Mousquetaires (2011)", search:"The Three Musketeers 2011"}]},
+      { saga: "Seul au Monde", items: [{label:"Seul au Monde", search:"Cast Away 2000 Tom Hanks"}]},
+      { saga: "Gemini Man", items: [{label:"Gemini Man", search:"Gemini Man 2019 Will Smith"}]},
+      { saga: "La Chute de la Maison Blanche", items: [
+        {label:"La Chute de la Maison Blanche", search:"Olympus Has Fallen 2013"},
+        {label:"London Has Fallen", search:"London Has Fallen 2016"},
+        {label:"Angel Has Fallen", search:"Angel Has Fallen 2019"}
+      ]},
+      { saga: "La Chute du Président", items: [{label:"La Chute du Président", search:"White House Down 2013"}]},
+      { saga: "Fast & Furious", items: [
+        {label:"Fast & Furious 1", search:"The Fast and the Furious"},
+        {label:"2 Fast 2 Furious", search:"2 Fast 2 Furious"},
+        {label:"Tokyo Drift", search:"The Fast and the Furious Tokyo Drift"},
+        {label:"Fast & Furious 4", search:"Fast Furious 2009"},
+        {label:"Fast Five", search:"Fast Five"},
+        {label:"Fast & Furious 6", search:"Fast Furious 6"},
+        {label:"Furious 7", search:"Furious 7"},
+        {label:"Fast 8", search:"The Fate of the Furious"},
+        {label:"Hobbs & Shaw (spin-off)", search:"Fast Furious Hobbs and Shaw"},
+        {label:"Fast 9", search:"F9 Fast Furious"},
+        {label:"Fast X", search:"Fast X"},
+        {label:"Fast & Furious 11", search:"Fast Furious 11"}
+      ]},
+      { saga: "Pirates des Caraïbes", items: [
+        {label:"La Malédiction du Black Pearl", search:"Pirates of the Caribbean The Curse of the Black Pearl"},
+        {label:"Le Secret du Coffre Maudit", search:"Pirates of the Caribbean Dead Man's Chest"},
+        {label:"Jusqu'au bout du monde", search:"Pirates of the Caribbean At World's End"},
+        {label:"La Fontaine de Jouvence", search:"Pirates of the Caribbean On Stranger Tides"},
+        {label:"La Vengeance de Salazar", search:"Pirates of the Caribbean Dead Men Tell No Tales"}
+      ]},
+      { saga: "Bad Boys", items: [
+        {label:"Bad Boys 1", search:"Bad Boys 1995"},
+        {label:"Bad Boys 2", search:"Bad Boys II"},
+        {label:"Bad Boys for Life", search:"Bad Boys for Life"},
+        {label:"Bad Boys: Ride or Die", search:"Bad Boys Ride or Die"}
+      ]},
+      { saga: "Expendables", items: [
+        {label:"Expendables 1", search:"The Expendables"},
+        {label:"Expendables 2", search:"The Expendables 2"},
+        {label:"Expendables 3", search:"The Expendables 3"},
+        {label:"Expendables 4", search:"Expend4bles"}
+      ]},
+      { saga: "Rush Hour", items: [
+        {label:"Rush Hour 1", search:"Rush Hour"},
+        {label:"Rush Hour 2", search:"Rush Hour 2"},
+        {label:"Rush Hour 3", search:"Rush Hour 3"}
+      ]},
+      { saga: "Jumanji", items: [
+        {label:"Jumanji (1995)", search:"Jumanji 1995"},
+        {label:"Bienvenue dans la Jungle", search:"Jumanji Welcome to the Jungle"},
+        {label:"The Next Level", search:"Jumanji The Next Level"}
+      ]},
+      { saga: "James Bond", items: [
+        {label:"Dr. No", search:"Dr. No James Bond"},
+        {label:"GoldenEye", search:"GoldenEye"},
+        {label:"Casino Royale", search:"Casino Royale 2006"},
+        {label:"Quantum of Solace", search:"Quantum of Solace"},
+        {label:"Skyfall", search:"Skyfall"},
+        {label:"Spectre", search:"Spectre 2015"},
+        {label:"Mourir Peut Attendre", search:"No Time to Die"}
+      ]},
+      { saga: "Gladiateur", items: [
+        {label:"Gladiateur 1", search:"Gladiator 2000"},
+        {label:"Gladiateur 2", search:"Gladiator II"}
+      ]},
+      { saga: "My Spy", items: [
+        {label:"My Spy 1", search:"My Spy 2020"},
+        {label:"My Spy 2", search:"My Spy The Eternal City"}
+      ]},
+      { saga: "Uncharted", items: [{label:"Uncharted", search:"Uncharted 2022"}]},
+      { saga: "Baby Driver", items: [{label:"Baby Driver", search:"Baby Driver"}]},
+      { saga: "Focus", items: [{label:"Focus", search:"Focus 2015"}]},
+      { saga: "Homefront", items: [{label:"Homefront", search:"Homefront 2013"}]},
+      { saga: "Hypnotic", items: [{label:"Hypnotic", search:"Hypnotic 2023"}]},
+      { saga: "American Assassin", items: [{label:"American Assassin", search:"American Assassin 2017"}]},
+      { saga: "Re:Born", items: [{label:"Re:Born", search:"Re:Born 2016"}]},
+      { saga: "The Gorge", items: [{label:"The Gorge", search:"The Gorge 2025"}]},
+      { saga: "Catch Me If You Can", items: [{label:"Catch Me If You Can", search:"Catch Me If You Can"}]},
+      { saga: "Baywatch", items: [
+        {label:"Baywatch", search:"Baywatch 2017 Dwayne Johnson"}
+      ]},
+      { saga: "San Andreas", items: [
+        {label:"San Andreas", search:"San Andreas 2015 Dwayne Johnson"}
+      ]},
+      { saga: "Red Notice", items: [
+        {label:"Red Notice", search:"Red Notice 2021 Netflix"}
+      ]},
+      { saga: "En Eaux Troubles (The Meg)", items: [
+        {label:"En Eaux Troubles 1", search:"The Meg 2018"},
+        {label:"En Eaux Troubles 2 : Le Gouffre", search:"Meg 2 The Trench"}
+      ]},
+      { saga: "Mechanic", items: [
+        {label:"Mechanic 1", search:"The Mechanic 2011 Jason Statham"},
+        {label:"Mechanic : Resurrection", search:"Mechanic Resurrection 2016"}
+      ]},
+      { saga: "Les Dents de la Mer", items: [
+        {label:"Les Dents de la Mer 1", search:"Jaws 1975"},
+        {label:"Les Dents de la Mer 2", search:"Jaws 2"},
+        {label:"Les Dents de la Mer 3", search:"Jaws 3"},
+        {label:"Les Dents de la Mer 4", search:"Jaws The Revenge"}
+      ]},
+      { saga: "Taxi", items: [
+        {label:"Taxi 1", search:"Taxi 1998 film français"},
+        {label:"Taxi 2", search:"Taxi 2 film français"},
+        {label:"Taxi 3", search:"Taxi 3 film français"},
+        {label:"Taxi 4", search:"Taxi 4 film français"},
+        {label:"Taxi 5", search:"Taxi 5 film français"}
+      ]},
+      { saga: "F1", items: [
+        {label:"F1", search:"F1 film 2025 Brad Pitt"}
+      ]},
+      { saga: "John Wick", items: [
+        {label:"John Wick 1", search:"John Wick 2014"},
+        {label:"John Wick 2", search:"John Wick Chapter 2"},
+        {label:"John Wick 3 - Parabellum", search:"John Wick Chapter 3 Parabellum"},
+        {label:"John Wick 4", search:"John Wick Chapter 4"}
+      ]},
+      { saga: "The Equalizer", items: [
+        {label:"The Equalizer 1", search:"The Equalizer 2014"},
+        {label:"The Equalizer 2", search:"The Equalizer 2"},
+        {label:"The Equalizer 3", search:"The Equalizer 3"}
+      ]},
+      { saga: "La Nuit au Musée", items: [
+        {label:"La Nuit au Musée 1", search:"Night at the Museum 2006"},
+        {label:"La Nuit au Musée 2", search:"Night at the Museum Battle of the Smithsonian"},
+        {label:"La Nuit au Musée 3 : Le Secret des Pharaons", search:"Night at the Museum Secret of the Tomb"}
+      ]},
+    ],
+    "🦸 Super-Héros": [
+      { saga: "Spider-Man (Raimi)", items: [
+        {label:"Spider-Man 1", search:"Spider-Man 2002"},
+        {label:"Spider-Man 2", search:"Spider-Man 2"},
+        {label:"Spider-Man 3", search:"Spider-Man 3"}
+      ]},
+      { saga: "Spider-Man (Amazing)", items: [
+        {label:"The Amazing Spider-Man 1", search:"The Amazing Spider-Man"},
+        {label:"The Amazing Spider-Man 2", search:"The Amazing Spider-Man 2"}
+      ]},
+      { saga: "Spider-Man (MCU)", items: [
+        {label:"Homecoming", search:"Spider-Man Homecoming"},
+        {label:"Far From Home", search:"Spider-Man Far From Home"},
+        {label:"No Way Home", search:"Spider-Man No Way Home"}
+      ]},
+      { saga: "Iron Man", items: [
+        {label:"Iron Man 1", search:"Iron Man 2008"},
+        {label:"Iron Man 2", search:"Iron Man 2"},
+        {label:"Iron Man 3", search:"Iron Man 3"}
+      ]},
+      { saga: "Thor", items: [
+        {label:"Thor 1", search:"Thor 2011"},
+        {label:"Le Monde des Ténèbres", search:"Thor The Dark World"},
+        {label:"Ragnarok", search:"Thor Ragnarok"},
+        {label:"Love and Thunder", search:"Thor Love and Thunder"}
+      ]},
+      { saga: "Hulk", items: [
+        {label:"Hulk (2003)", search:"Hulk 2003"},
+        {label:"L'Incroyable Hulk", search:"The Incredible Hulk 2008"}
+      ]},
+      { saga: "Captain America", items: [
+        {label:"First Avenger", search:"Captain America The First Avenger"},
+        {label:"Le Soldat de l'Hiver", search:"Captain America The Winter Soldier"},
+        {label:"Civil War", search:"Captain America Civil War"}
+      ]},
+      { saga: "Captain Marvel", items: [
+        {label:"Captain Marvel", search:"Captain Marvel 2019"},
+        {label:"The Marvels", search:"The Marvels 2023"}
+      ]},
+      { saga: "Black Panther", items: [
+        {label:"Black Panther 1", search:"Black Panther 2018"},
+        {label:"Wakanda Forever", search:"Black Panther Wakanda Forever"}
+      ]},
+      { saga: "Black Widow", items: [{label:"Black Widow", search:"Black Widow 2021"}]},
+      { saga: "Ant-Man", items: [
+        {label:"Ant-Man 1", search:"Ant-Man 2015"},
+        {label:"Ant-Man et la Guêpe", search:"Ant-Man and the Wasp"},
+        {label:"Quantumania", search:"Ant-Man and the Wasp Quantumania"}
+      ]},
+      { saga: "Docteur Strange", items: [
+        {label:"Docteur Strange 1", search:"Doctor Strange 2016"},
+        {label:"Multiverse of Madness", search:"Doctor Strange in the Multiverse of Madness"}
+      ]},
+      { saga: "Avengers", items: [
+        {label:"Avengers 1", search:"The Avengers 2012"},
+        {label:"L'Ère d'Ultron", search:"Avengers Age of Ultron"},
+        {label:"Infinity War", search:"Avengers Infinity War"},
+        {label:"Endgame", search:"Avengers Endgame"}
+      ]},
+      { saga: "Gardiens de la Galaxie", items: [
+        {label:"Vol. 1", search:"Guardians of the Galaxy 2014"},
+        {label:"Vol. 2", search:"Guardians of the Galaxy Vol 2"},
+        {label:"Vol. 3", search:"Guardians of the Galaxy Vol 3"}
+      ]},
+      { saga: "Deadpool", items: [
+        {label:"Deadpool 1", search:"Deadpool 2016"},
+        {label:"Deadpool 2", search:"Deadpool 2"},
+        {label:"Deadpool & Wolverine", search:"Deadpool and Wolverine"}
+      ]},
+      { saga: "Venom", items: [
+        {label:"Venom 1", search:"Venom 2018"},
+        {label:"Let There Be Carnage", search:"Venom Let There Be Carnage"},
+        {label:"The Last Dance", search:"Venom The Last Dance"}
+      ]},
+      { saga: "Logan", items: [
+        {label:"X-Men Origins : Wolverine", search:"X-Men Origins Wolverine 2009"},
+        {label:"Wolverine : Le Combat de l'Immortel", search:"The Wolverine 2013"},
+        {label:"Logan", search:"Logan 2017"}
+      ]},
+      { saga: "Black Adam", items: [
+        {label:"Black Adam", search:"Black Adam 2022 Dwayne Johnson"}
+      ]},
+      { saga: "Kraven the Hunter", items: [{label:"Kraven the Hunter", search:"Kraven the Hunter 2024"}]},
+      { saga: "Batman (Nolan)", items: [
+        {label:"Batman Begins", search:"Batman Begins"},
+        {label:"The Dark Knight", search:"The Dark Knight"},
+        {label:"The Dark Knight Rises", search:"The Dark Knight Rises"}
+      ]},
+      { saga: "Wonder Woman", items: [
+        {label:"Wonder Woman 1", search:"Wonder Woman 2017"},
+        {label:"Wonder Woman 1984", search:"Wonder Woman 1984"}
+      ]},
+      { saga: "Superman", items: [
+        {label:"L'Homme d'Acier", search:"Man of Steel"},
+        {label:"Batman v Superman", search:"Batman v Superman Dawn of Justice"},
+        {label:"Superman Legacy", search:"Superman 2025"}
+      ]},
+      { saga: "MR Wolf", items: [
+        {label:"MR Wolf 1", search:"The Bad Guys 2022"},
+        {label:"MR Wolf 2", search:"The Bad Guys 2"}
+      ]},
+      { saga: "Aquaman", items: [
+        {label:"Aquaman 1", search:"Aquaman 2018"},
+        {label:"Aquaman 2 : Lost Kingdom", search:"Aquaman and the Lost Kingdom"}
+      ]},
+      { saga: "Shazam", items: [
+        {label:"Shazam! 1", search:"Shazam 2019"},
+        {label:"Shazam! 2 : La Rage des Dieux", search:"Shazam Fury of the Gods"}
+      ]},
+    ],
+    "🧙 Fantasy / Sci-Fi": [
+      { saga: "Harry Potter", items: [
+        {label:"L'École des Sorciers", search:"Harry Potter Philosopher's Stone"},
+        {label:"La Chambre des Secrets", search:"Harry Potter Chamber of Secrets"},
+        {label:"Le Prisonnier d'Azkaban", search:"Harry Potter Prisoner of Azkaban"},
+        {label:"La Coupe de Feu", search:"Harry Potter Goblet of Fire"},
+        {label:"L'Ordre du Phénix", search:"Harry Potter Order of the Phoenix"},
+        {label:"Le Prince de Sang-Mêlé", search:"Harry Potter Half-Blood Prince"},
+        {label:"Les Reliques Part.1", search:"Harry Potter Deathly Hallows Part 1"},
+        {label:"Les Reliques Part.2", search:"Harry Potter Deathly Hallows Part 2"}
+      ]},
+      { saga: "Star Wars", items: [
+        {label:"La Menace Fantôme", search:"Star Wars The Phantom Menace"},
+        {label:"L'Attaque des Clones", search:"Star Wars Attack of the Clones"},
+        {label:"La Revanche des Sith", search:"Star Wars Revenge of the Sith"},
+        {label:"Un Nouvel Espoir", search:"Star Wars A New Hope"},
+        {label:"L'Empire Contre-Attaque", search:"Star Wars The Empire Strikes Back"},
+        {label:"Le Retour du Jedi", search:"Star Wars Return of the Jedi"},
+        {label:"Le Réveil de la Force", search:"Star Wars The Force Awakens"},
+        {label:"Les Derniers Jedi", search:"Star Wars The Last Jedi"},
+        {label:"L'Ascension de Skywalker", search:"Star Wars The Rise of Skywalker"}
+      ]},
+      { saga: "Le Seigneur des Anneaux", items: [
+        {label:"La Communauté de l'Anneau", search:"The Lord of the Rings The Fellowship of the Ring"},
+        {label:"Les Deux Tours", search:"The Lord of the Rings The Two Towers"},
+        {label:"Le Retour du Roi", search:"The Lord of the Rings The Return of the King"}
+      ]},
+      { saga: "Avatar", items: [
+        {label:"Avatar 1", search:"Avatar 2009"},
+        {label:"La Voie de l'Eau", search:"Avatar The Way of Water"},
+        {label:"Avatar 3 (à venir)", search:"Avatar 3"}
+      ]},
+      { saga: "Hunger Games", items: [
+        {label:"Hunger Games 1", search:"The Hunger Games 2012"},
+        {label:"L'Embrasement", search:"The Hunger Games Catching Fire"},
+        {label:"La Révolte Part.1", search:"The Hunger Games Mockingjay Part 1"},
+        {label:"La Révolte Part.2", search:"The Hunger Games Mockingjay Part 2"},
+        {label:"La Ballade du Serpent", search:"The Hunger Games Ballad of Songbirds and Snakes"}
+      ]},
+      { saga: "Jurassic Park / World", items: [
+        {label:"Jurassic Park 1", search:"Jurassic Park 1993"},
+        {label:"Le Monde Perdu", search:"The Lost World Jurassic Park"},
+        {label:"Jurassic Park 3", search:"Jurassic Park III"},
+        {label:"Jurassic World 1", search:"Jurassic World 2015"},
+        {label:"Fallen Kingdom", search:"Jurassic World Fallen Kingdom"},
+        {label:"Dominion", search:"Jurassic World Dominion"}
+      ]},
+      { saga: "Transformers", items: [
+        {label:"Transformers 1", search:"Transformers 2007"},
+        {label:"La Revanche", search:"Transformers Revenge of the Fallen"},
+        {label:"La Face Cachée", search:"Transformers Dark of the Moon"},
+        {label:"L'Âge de l'Extinction", search:"Transformers Age of Extinction"},
+        {label:"The Last Knight", search:"Transformers The Last Knight"},
+        {label:"Bumblebee", search:"Bumblebee 2018"},
+        {label:"Rise of the Beasts", search:"Transformers Rise of the Beasts"}
+      ]},
+      { saga: "La Planète des Singes", items: [
+        {label:"La Planète des Singes (1968)", search:"Planet of the Apes 1968"},
+        {label:"La Planète des Singes : Les Origines", search:"Rise of the Planet of the Apes"},
+        {label:"La Planète des Singes : L'Affrontement", search:"Dawn of the Planet of the Apes"},
+        {label:"La Planète des Singes : Suprématie", search:"War for the Planet of the Apes"},
+        {label:"Le Royaume de la Planète des Singes", search:"Kingdom of the Planet of the Apes"}
+      ]},
+      { saga: "In Time", items: [{label:"In Time", search:"In Time 2011"}]},
+      { saga: "Lucy", items: [{label:"Lucy", search:"Lucy 2014"}]},
+      { saga: "Titan", items: [{label:"Titan", search:"The Titan 2018"}]},
+      { saga: "Oppenheimer", items: [{label:"Oppenheimer", search:"Oppenheimer 2023"}]},
+    ],
+    "😂 Comédie": [
+      { saga: "Gérald le Conquérant", items: [{label:"Gérald le Conquérant", search:"Gérald le Conquérant 2025 Fabrice Eboué"}]},
+      { saga: "Maison de Retraite", items: [{label:"Maison de Retraite", search:"Maison de Retraite 2022 Kev Adams"}]},
+      { saga: "Marsupilami", items: [{label:"Marsupilami", search:"Marsupilami 2026 Philippe Lacheau"}]},
+      { saga: "Le Clan", items: [{label:"Le Clan", search:"Le Clan 2023 comédie corse Fraticelli"}]},
+      { saga: "Yes Man", items: [{label:"Yes Man", search:"Yes Man 2008 Jim Carrey"}]},
+      { saga: "Evan Tout-Puissant", items: [{label:"Evan Tout-Puissant", search:"Evan Almighty 2007"}]},
+      { saga: "Belfagor le Magnifique", items: [{label:"Belfagor le Magnifique", search:"Belphégor le fantôme du Louvre 2001"}]},
+      { saga: "Les Nouvelles Aventures d'Aladin", items: [{label:"Les Nouvelles Aventures d'Aladin", search:"Les Nouvelles Aventures d'Aladin 2015"}]},
+      { saga: "Brice de Nice", items: [
+        {label:"Brice de Nice 1", search:"Brice de Nice 2005"},
+        {label:"Brice de Nice 2", search:"Le Retour de Brice de Nice 2025"}
+      ]},
+      { saga: "Un Petit Truc en Plus", items: [{label:"Un Petit Truc en Plus", search:"Un Petit Truc en Plus 2024"}]},
+      { saga: "Épouse-moi mon Pote", items: [{label:"Épouse-moi mon Pote", search:"Épouse-moi mon Pote 2017"}]},
+      { saga: "Ibiza", items: [{label:"Ibiza", search:"Ibiza 2019 Christian Clavier"}]},
+      { saga: "Venise n'est pas en Italie", items: [{label:"Venise n'est pas en Italie", search:"Venise n'est pas en Italie 2019"}]},
+      { saga: "Loin du Périph", items: [{label:"Loin du Périph", search:"Loin du Périph 2022 Omar Sy"}]},
+      { saga: "L'Extravagant Voyage du jeune et prodigieux T.S. Spivet", items: [{label:"L'Extravagant Voyage du jeune et prodigieux T.S. Spivet", search:"The Young and Prodigious T.S. Spivet 2013"}]},
+      { saga: "Le Dictateur", items: [
+        {label:"Le Dictateur", search:"The Dictator 2012 Sacha Baron Cohen"}
+      ]},
+      { saga: "Borat", items: [
+        {label:"Borat 1", search:"Borat 2006"},
+        {label:"Borat 2", search:"Borat Subsequent Moviefilm 2020"}
+      ]},
+      { saga: "Les Tuches", items: [
+        {label:"Les Tuches 1", search:"Les Tuches"},
+        {label:"Les Tuches 2", search:"Les Tuches 2"},
+        {label:"Les Tuches 3", search:"Les Tuches 3"},
+        {label:"Les Tuches 4", search:"Les Tuches 4"},
+        {label:"Les Tuches 5", search:"Les Tuches 5"}
+      ]},
+      { saga: "Insaisissables", items: [
+        {label:"Insaisissables 1", search:"Now You See Me"},
+        {label:"Insaisissables 2", search:"Now You See Me 2"},
+        {label:"Insaisissables 3", search:"Now You See Me 3"}
+      ]},
+      { saga: "La Folie des Hauteurs", items: [{label:"La Folie des Hauteurs", search:"La Folie des grandeurs"}]},
+      { saga: "Old School", items: [{label:"Old School", search:"Old School 2003"}]},
+      { saga: "Inestimable", items: [{label:"Inestimable (Intouchables)", search:"Intouchables"}]},
+      { saga: "Green Book", items: [{label:"Green Book", search:"Green Book 2018"}]},
+      { saga: "Copain pour toujours (Grown Ups)", items: [
+        {label:"Copain pour toujours 1", search:"Grown Ups 2010"},
+        {label:"Copain pour toujours 2", search:"Grown Ups 2"}
+      ]},
+      { saga: "Happy Gilmore", items: [
+        {label:"Happy Gilmore 1", search:"Happy Gilmore 1996"},
+        {label:"Happy Gilmore 2", search:"Happy Gilmore 2 2025"}
+      ]},
+      { saga: "You Don't Mess with the Zohan", items: [
+        {label:"You Don't Mess with the Zohan", search:"You Don't Mess with the Zohan"}
+      ]},
+      { saga: "Just Go With It", items: [
+        {label:"Just Go With It", search:"Just Go With It 2011"}
+      ]},
+      { saga: "Murder Mystery", items: [
+        {label:"Murder Mystery 1", search:"Murder Mystery 2019"},
+        {label:"Murder Mystery 2", search:"Murder Mystery 2 2023"}
+      ]},
+      { saga: "Blended", items: [
+        {label:"Blended", search:"Blended 2014"}
+      ]},
+      { saga: "Hustle", items: [
+        {label:"Hustle", search:"Hustle 2022 Adam Sandler"}
+      ]},
+      { saga: "Le Dîner de Cons", items: [
+        {label:"Le Dîner de Cons", search:"Le Dîner de Cons 1998"}
+      ]},
+      { saga: "Astérix", items: [
+        {label:"Astérix et Obélix contre César", search:"Astérix et Obélix contre César"},
+        {label:"Astérix et Obélix : Mission Cléopâtre", search:"Astérix et Obélix Mission Cléopâtre"},
+        {label:"Astérix aux Jeux Olympiques", search:"Astérix aux Jeux Olympiques"},
+        {label:"Astérix et Obélix : Au Service de Sa Majesté", search:"Astérix et Obélix Au Service de Sa Majesté"},
+        {label:"Astérix et Obélix : L'Empire du Milieu", search:"Astérix et Obélix L'Empire du Milieu"}
+      ]},
+      { saga: "Bienvenue chez les Ch'tis", items: [
+        {label:"Bienvenue chez les Ch'tis", search:"Bienvenue chez les Ch'tis"}
+      ]},
+      { saga: "Intouchables", items: [
+        {label:"Intouchables", search:"Intouchables 2011"}
+      ]},
+      { saga: "Qu'est-ce qu'on a fait au Bon Dieu", items: [
+        {label:"Qu'est-ce qu'on a fait au Bon Dieu 1", search:"Qu'est-ce qu'on a fait au Bon Dieu"},
+        {label:"Qu'est-ce qu'on a fait au Bon Dieu 2", search:"Qu'est-ce qu'on a fait encore au Bon Dieu"},
+        {label:"Qu'est-ce qu'on a fait au Bon Dieu 3", search:"Qu'est-ce qu'on a encore fait au Bon Dieu"}
+      ]},
+      { saga: "Babysitting", items: [
+        {label:"Babysitting 1", search:"Babysitting 2013"},
+        {label:"Babysitting 2", search:"Babysitting 2 2015"}
+      ]},
+      { saga: "Alibi.com", items: [
+        {label:"Alibi.com 1", search:"Alibi.com 2017"},
+        {label:"Alibi.com 2", search:"Alibi.com 2 2023"}
+      ]},
+      { saga: "Les Indestructibles", items: [
+        {label:"Les Indestructibles 1", search:"The Incredibles 2004"},
+        {label:"Les Indestructibles 2", search:"Incredibles 2"}
+      ]},
+      { saga: "Very Bad Trip", items: [
+        {label:"Very Bad Trip 1", search:"The Hangover 2009"},
+        {label:"Very Bad Trip 2", search:"The Hangover Part II"},
+        {label:"Very Bad Trip 3", search:"The Hangover Part III"}
+      ]},
+      { saga: "Ted", items: [
+        {label:"Ted 1", search:"Ted 2012"},
+        {label:"Ted 2", search:"Ted 2 2015"}
+      ]},
+    ],
+    "❤️ Romance / Drame": [
+      { saga: "After", items: [
+        {label:"After 1", search:"After 2019"},
+        {label:"After 2", search:"After We Collided"},
+        {label:"After 3", search:"After We Fell"},
+        {label:"After 4", search:"After Ever Happy"}
+      ]},
+      { saga: "The Blind Side", items: [{label:"The Blind Side", search:"The Blind Side"}]},
+      { saga: "Adaline", items: [{label:"Adaline", search:"The Age of Adaline"}]},
+      { saga: "The Lucky One", items: [{label:"The Lucky One", search:"The Lucky One"}]},
+      { saga: "Forever My Girl", items: [{label:"Forever My Girl", search:"Forever My Girl"}]},
+      { saga: "Tout Sauf Toi", items: [{label:"Tout Sauf Toi", search:"Anyone But You"}]},
+      { saga: "Si le Ciel Existait", items: [{label:"Si le Ciel Existait", search:"Si le ciel existe"}]},
+      { saga: "No Limit", items: [{label:"No Limit", search:"No Limit 2012"}]},
+      { saga: "Gilbert Grape", items: [
+        {label:"Qu'est-ce qui fait courir Gilbert Grape ?", search:"What's Eating Gilbert Grape 1993"}
+      ]},
+    ],
+    "⚔️ Guerre": [
+      { saga: "Napoléon", items: [{label:"Napoléon", search:"Napoleon 2023 Ridley Scott Joaquin Phoenix"}]},
+      { saga: "The Covenant : Mission en Afghanistan", items: [{label:"The Covenant : Mission en Afghanistan", search:"The Covenant 2023 Guy Ritchie"}]},
+      { saga: "American Sniper", items: [
+        {label:"American Sniper", search:"American Sniper 2014 Clint Eastwood"}
+      ]},
+      { saga: "Il faut sauver le Soldat Ryan", items: [
+        {label:"Il faut sauver le Soldat Ryan", search:"Saving Private Ryan 1998"}
+      ]},
+      { saga: "Shooter - Tireur d'élite", items: [
+        {label:"Shooter - Tireur d'élite", search:"Shooter 2007 Mark Wahlberg"}
+      ]},
+      { saga: "Take Cover", items: [
+        {label:"Take Cover", search:"Take Cover 2024 Scott Adkins"}
+      ]},
+      { saga: "The Wall", items: [
+        {label:"The Wall", search:"The Wall 2017 sniper film"}
+      ]},
+      { saga: "Sniper : Le Corbeau Blanc", items: [
+        {label:"Sniper : Le Corbeau Blanc", search:"Sniper The White Raven 2022"}
+      ]},
+      { saga: "The White Death (Simo Häyhä)", items: [
+        {label:"The White Death (à venir 2027)", search:"The White Death Simo Hayha film"}
+      ]},
+    ],
+    "👻 Horreur": [
+      { saga: "Sinners", items: [{label:"Sinners", search:"Sinners 2025 Ryan Coogler Michael B Jordan"}]},
+      { saga: "Beetlejuice", items: [
+        {label:"Beetlejuice (1988)", search:"Beetlejuice 1988 Tim Burton"},
+        {label:"Beetlejuice Beetlejuice (2024)", search:"Beetlejuice Beetlejuice 2024"}
+      ]},
+      { saga: "Ça (It)", items: [
+        {label:"Ça - Chapitre 1", search:"It 2017"},
+        {label:"Ça - Chapitre 2", search:"It Chapter Two"}
+      ]},
+      { saga: "Countdown", items: [
+        {label:"Countdown", search:"Countdown 2019 horror"}
+      ]},
+    ],
+    "🔍 Thriller / Crime": [
+      { saga: "Gourou", items: [{label:"Gourou", search:"Gourou 2026 Pierre Niney"}]},
+      { saga: "Homefront", items: [{label:"Homefront", search:"Homefront 2013 Jason Statham"}]},
+      { saga: "Hitman", items: [{label:"Hitman", search:"Hitman 2024 film Richard Linklater"}]},
+      { saga: "Havoc", items: [{label:"Havoc", search:"Havoc 2025 Tom Hardy Netflix Gareth Evans"}]},
+      { saga: "La Rançon", items: [{label:"La Rançon", search:"Ransom 1996 Mel Gibson Ron Howard"}]},
+      { saga: "Heat", items: [{label:"Heat", search:"Heat 1995 Michael Mann Al Pacino De Niro"}]},
+      { saga: "American Gangster", items: [{label:"American Gangster", search:"American Gangster 2007"}]},
+      { saga: "Zodiac", items: [
+        {label:"Zodiac", search:"Zodiac 2007 David Fincher"}
+      ]},
+      { saga: "American Psycho", items: [
+        {label:"American Psycho", search:"American Psycho 2000"}
+      ]},
+      { saga: "Joker", items: [
+        {label:"Joker 1", search:"Joker 2019"},
+        {label:"Joker 2 : Folie à Deux", search:"Joker Folie a Deux 2024"}
+      ]},
+      { saga: "Inception", items: [{label:"Inception", search:"Inception 2010 Christopher Nolan"}]},
+      { saga: "Le Prestige", items: [
+        {label:"Le Prestige", search:"The Prestige 2006"}
+      ]},
+      { saga: "Le Loup de Wall Street", items: [
+        {label:"Le Loup de Wall Street", search:"The Wolf of Wall Street 2013"}
+      ]},
+      { saga: "The Gentleman", items: [{label:"The Gentleman", search:"The Gentlemen 2019"}]},
+      { saga: "Bronson", items: [{label:"Bronson", search:"Bronson 2008"}]},
+      { saga: "Wicked Minds", items: [{label:"Wicked Minds", search:"Wicked Minds 2023"}]},
+      { saga: "Wishmaster", items: [
+        {label:"Wishmaster 1", search:"Wishmaster 1997"},
+        {label:"Wishmaster 2", search:"Wishmaster 2"},
+        {label:"Wishmaster 3", search:"Wishmaster 3"},
+        {label:"Wishmaster 4", search:"Wishmaster 4"}
+      ]},
+      { saga: "Skin", items: [{label:"Skin", search:"Skin 2018"}]},
+      { saga: "The Jester", items: [{label:"The Jester", search:"The Jester 2023"}]},
+      { saga: "1992", items: [{label:"1992", search:"1992 film"}]},
+      { saga: "Interest Fact", items: [{label:"Interest Fact", search:"Interest Fact"}]},
+    ],
+    "🧊 Animation": [
+      { saga: "Âge de Glace", items: [
+        {label:"Âge de Glace 1", search:"Ice Age 2002"},
+        {label:"Âge de Glace 2", search:"Ice Age The Meltdown"},
+        {label:"Âge de Glace 3", search:"Ice Age Dawn of the Dinosaurs"},
+        {label:"Âge de Glace 4", search:"Ice Age Continental Drift"},
+        {label:"Âge de Glace 5", search:"Ice Age Collision Course"}
+      ]},
+      { saga: "Shrek", items: [
+        {label:"Shrek 1", search:"Shrek 2001"},
+        {label:"Shrek 2", search:"Shrek 2"},
+        {label:"Shrek 3", search:"Shrek the Third"},
+        {label:"Shrek 4", search:"Shrek Forever After"}
+      ]},
+      { saga: "Kung Fu Panda", items: [
+        {label:"Kung Fu Panda 1", search:"Kung Fu Panda 2008"},
+        {label:"Kung Fu Panda 2", search:"Kung Fu Panda 2"},
+        {label:"Kung Fu Panda 3", search:"Kung Fu Panda 3"},
+        {label:"Kung Fu Panda 4", search:"Kung Fu Panda 4"}
+      ]},
+      { saga: "Moi Moche et Méchant / Minions", items: [
+        {label:"Moi Moche et Méchant 1", search:"Despicable Me"},
+        {label:"Moi Moche et Méchant 2", search:"Despicable Me 2"},
+        {label:"Minions 1", search:"Minions 2015"},
+        {label:"Moi Moche et Méchant 3", search:"Despicable Me 3"},
+        {label:"Minions 2", search:"Minions The Rise of Gru"},
+        {label:"Moi Moche et Méchant 4", search:"Despicable Me 4"}
+      ]},
+      { saga: "Toy Story", items: [
+        {label:"Toy Story 1", search:"Toy Story 1995"},
+        {label:"Toy Story 2", search:"Toy Story 2"},
+        {label:"Toy Story 3", search:"Toy Story 3"},
+        {label:"Toy Story 4", search:"Toy Story 4"}
+      ]},
+      { saga: "Dragons", items: [
+        {label:"Dragons 1", search:"How to Train Your Dragon"},
+        {label:"Dragons 2", search:"How to Train Your Dragon 2"},
+        {label:"Dragons 3", search:"How to Train Your Dragon The Hidden World"}
+      ]},
+      { saga: "Madagascar", items: [
+        {label:"Madagascar 1", search:"Madagascar 2005"},
+        {label:"Madagascar 2", search:"Madagascar Escape 2 Africa"},
+        {label:"Madagascar 3", search:"Madagascar 3 Europes Most Wanted"}
+      ]},
+      { saga: "Les Croods", items: [
+        {label:"Les Croods 1", search:"The Croods"},
+        {label:"Les Croods 2", search:"The Croods A New Age"}
+      ]},
+      { saga: "Nemo", items: [
+        {label:"Le Monde de Nemo", search:"Finding Nemo"},
+        {label:"Le Monde de Dory", search:"Finding Dory"}
+      ]},
+      { saga: "Cars", items: [
+        {label:"Cars 1", search:"Cars 2006"},
+        {label:"Cars 2", search:"Cars 2"},
+        {label:"Cars 3", search:"Cars 3"}
+      ]},
+      { saga: "Wall-E", items: [{label:"Wall-E", search:"WALL-E"}]},
+      { saga: "Ratatouille", items: [{label:"Ratatouille", search:"Ratatouille"}]},
+      { saga: "Megamind", items: [
+        {label:"Megamind 1", search:"Megamind 2010"},
+        {label:"Megamind 2 : La Patrouille", search:"Megamind vs the Doom Syndicate 2024"}
+      ]},
+      { saga: "Turbo", items: [
+        {label:"Turbo", search:"Turbo 2013"}
+      ]},
+      { saga: "Pingouins de Madagascar", items: [
+        {label:"Pingouins de Madagascar", search:"Penguins of Madagascar 2014"}
+      ]},
+      { saga: "Trolls", items: [
+        {label:"Trolls 1", search:"Trolls 2016"},
+        {label:"Trolls 2 : Tournée Mondiale", search:"Trolls World Tour"},
+        {label:"Trolls 3 : Tous Ensemble", search:"Trolls Band Together"}
+      ]},
+      { saga: "Abominable", items: [
+        {label:"Abominable", search:"Abominable 2019"}
+      ]},
+      { saga: "Boss Baby", items: [
+        {label:"Boss Baby 1", search:"The Boss Baby 2017"},
+        {label:"Boss Baby 2 : Une Affaire de Famille", search:"The Boss Baby Family Business"}
+      ]},
+      { saga: "Le Chat Potté", items: [
+        {label:"Le Chat Potté 1", search:"Puss in Boots 2011"},
+        {label:"Le Chat Potté 2 : La Dernière Quête", search:"Puss in Boots The Last Wish"}
+      ]},
+      { saga: "Là-Haut (Up)", items: [
+        {label:"Là-Haut (Up)", search:"Up Pixar 2009"}
+      ]},
+      { saga: "Rebelle (Brave)", items: [
+        {label:"Rebelle (Brave)", search:"Brave Pixar 2012"}
+      ]},
+      { saga: "Coco", items: [
+        {label:"Coco", search:"Coco Pixar 2017"}
+      ]},
+      { saga: "Luca", items: [
+        {label:"Luca", search:"Luca Pixar 2021"}
+      ]},
+      { saga: "Aladdin", items: [
+        {label:"Aladdin (1992)", search:"Aladdin 1992 Disney"},
+        {label:"Aladdin (remake 2019)", search:"Aladdin 2019"}
+      ]},
+      { saga: "Le Roi Lion", items: [
+        {label:"Le Roi Lion (1994)", search:"The Lion King 1994"},
+        {label:"Le Roi Lion (remake 2019)", search:"The Lion King 2019"}
+      ]},
+      { saga: "La Belle et la Bête", items: [
+        {label:"La Belle et la Bête (1991)", search:"Beauty and the Beast 1991"},
+        {label:"La Belle et la Bête (remake 2017)", search:"Beauty and the Beast 2017"}
+      ]},
+      { saga: "Mulan", items: [
+        {label:"Mulan (1998)", search:"Mulan 1998 Disney"},
+        {label:"Mulan (remake 2020)", search:"Mulan 2020"}
+      ]},
+      { saga: "Tarzan", items: [
+        {label:"Tarzan", search:"Tarzan 1999 Disney"}
+      ]},
+      { saga: "Hercule", items: [
+        {label:"Hercule", search:"Hercules 1997 Disney"}
+      ]},
+      { saga: "Cendrillon", items: [
+        {label:"Cendrillon (1950)", search:"Cinderella 1950 Disney"},
+        {label:"Cendrillon (remake 2015)", search:"Cinderella 2015"}
+      ]},
+      { saga: "Blanche Neige", items: [
+        {label:"Blanche Neige (1937)", search:"Snow White and the Seven Dwarfs 1937"},
+        {label:"Blanche Neige (remake 2025)", search:"Snow White 2025"}
+      ]},
+      { saga: "Bigfoot Junior", items: [
+        {label:"Bigfoot Junior 1", search:"Bigfoot Junior 2017 animation"},
+        {label:"Bigfoot Junior 2", search:"Bigfoot Junior 2 2020 animation"}
+      ]},
+      { saga: "Stuart Little", items: [
+        {label:"Stuart Little 1", search:"Stuart Little 1999"},
+        {label:"Stuart Little 2", search:"Stuart Little 2 2002"}
+      ]},
+      { saga: "Rio", items: [
+        {label:"Rio 1", search:"Rio 2011 Blue Sky animation"},
+        {label:"Rio 2", search:"Rio 2 2014 Blue Sky animation"}
+      ]},
+      { saga: "Paddington", items: [
+        {label:"Paddington 1", search:"Paddington 2014 film"},
+        {label:"Paddington 2", search:"Paddington 2 2017 film"},
+        {label:"Paddington au Perú", search:"Paddington in Peru 2024 film"}
+      ]},
+      { saga: "Souris City", items: [{label:"Souris City", search:"Flushed Away 2006"}]},
+      { saga: "Nos Voisins, les Hommes", items: [{label:"Nos Voisins, les Hommes", search:"Over the Hedge 2006"}]},
+      { saga: "Robots", items: [{label:"Robots", search:"Robots 2005 animation"}]},
+      { saga: "Les Rois de la Glisse", items: [
+        {label:"Les Rois de la Glisse 1", search:"Surf's Up 2007"},
+        {label:"Les Rois de la Glisse 2 : WaveMania", search:"Surf's Up 2 WaveMania 2017"}
+      ]},
+      { saga: "Monstres contre Aliens", items: [{label:"Monstres contre Aliens", search:"Monsters vs Aliens 2009"}]},
+      { saga: "Chicken Little", items: [{label:"Chicken Little", search:"Chicken Little 2005 Disney"}]},
+      { saga: "Opération Casse-Noisette", items: [
+        {label:"Opération Casse-Noisette (2014)", search:"The Nut Job 2014"},
+        {label:"Opération Casse-Noisette 2 (2017)", search:"The Nut Job 2 Nutty by Nature 2017"}
+      ]},
+      { saga: "Happy Feet", items: [
+        {label:"Happy Feet 1", search:"Happy Feet 2006"},
+        {label:"Happy Feet 2", search:"Happy Feet Two 2011"}
+      ]},
+      { saga: "Tempête de Boulettes Géantes", items: [
+        {label:"Tempête de Boulettes Géantes 1", search:"Cloudy with a Chance of Meatballs 2009"},
+        {label:"Tempête de Boulettes Géantes 2", search:"Cloudy with a Chance of Meatballs 2 2013"}
+      ]},
+      { saga: "Comme des Bêtes", items: [
+        {label:"Comme des Bêtes 1", search:"The Secret Life of Pets 2016"},
+        {label:"Comme des Bêtes 2", search:"The Secret Life of Pets 2 2019"}
+      ]},
+      { saga: "Les Schtroumpfs", items: [
+        {label:"Les Schtroumpfs (2011)", search:"The Smurfs 2011"},
+        {label:"Les Schtroumpfs 2 (2013)", search:"The Smurfs 2 2013"},
+        {label:"Schtroumpfs et le Village Perdu (2017)", search:"Smurfs The Lost Village 2017"}
+      ]},
+      { saga: "Pokémon Détective Pikachu", items: [{label:"Pokémon Détective Pikachu", search:"Detective Pikachu 2019"}]},
+      { saga: "Charlie et la Chocolaterie", items: [
+        {label:"Charlie et la Chocolaterie (2005)", search:"Charlie and the Chocolate Factory 2005 Tim Burton"},
+        {label:"Wonka (2023)", search:"Wonka 2023"}
+      ]},
+      { saga: "Albator, Corsaire de l'Espace", items: [
+        {label:"Albator, Corsaire de l'Espace", search:"Harlock Space Pirate 2013"}
+      ]},
+      { saga: "Bambi", items: [
+        {label:"Bambi (1942)", search:"Bambi 1942 Disney"}
+      ]},
+      { saga: "Raiponce", items: [
+        {label:"Raiponce", search:"Tangled 2010 Disney"}
+      ]},
+      { saga: "Vaiana", items: [
+        {label:"Vaiana 1", search:"Moana 2016 Disney"},
+        {label:"Vaiana 2", search:"Moana 2 2024"}
+      ]},
+      { saga: "Zootopie", items: [
+        {label:"Zootopie", search:"Zootopia 2016"},
+        {label:"Zootopie 2", search:"Zootopia 2 2025"}
+      ]},
+      { saga: "Ralph", items: [
+        {label:"Ralph 1", search:"Wreck-It Ralph 2012"},
+        {label:"Ralph 2 : Internet", search:"Ralph Breaks the Internet"}
+      ]},
+      { saga: "Maleficent", items: [
+        {label:"Maleficent 1", search:"Maleficent 2014"},
+        {label:"Maleficent 2 : Le Pouvoir du Mal", search:"Maleficent Mistress of Evil"}
+      ]},
+    ],
+    "🧒 Famille / Enfance": [
+      { saga: "Sauvez Willy", items: [
+        {label:"Sauvez Willy 1", search:"Free Willy 1993"},
+        {label:"Sauvez Willy 2", search:"Free Willy 2 The Adventure Home"},
+        {label:"Sauvez Willy 3", search:"Free Willy 3 The Rescue"}
+      ]},
+      { saga: "Peter Pan", items: [
+        {label:"Peter Pan (2003)", search:"Peter Pan 2003 film"},
+        {label:"Peter Pan & Wendy (2023)", search:"Peter Pan and Wendy 2023 Disney"}
+      ]},
+      { saga: "Ducobu", items: [
+        {label:"Ducobu 1", search:"Ducobu 2011"},
+        {label:"Ducobu 2 : Bienvenue chez les Cancres", search:"Ducobu 2 2012"},
+        {label:"Ducobu 3", search:"Ducobu 3 2019"},
+        {label:"Ducobu président !", search:"Ducobu Président 2022"}
+      ]},
+    ],
+    "🎭 Drame": [
+      { saga: "Michael Jackson (biopic 2026)", items: [{label:"Michael Jackson (biopic 2026)", search:"Michael 2026 Antoine Fuqua Jackson biopic"}]},
+      { saga: "Monsieur Aznavour", items: [{label:"Monsieur Aznavour", search:"Monsieur Aznavour 2024 Tahar Rahim"}]},
+      { saga: "Le Brio", items: [{label:"Le Brio", search:"Le Brio 2017 Daniel Auteuil Camélia Jordana"}]},
+      { saga: "Coach Carter", items: [{label:"Coach Carter", search:"Coach Carter 2005"}]},
+      { saga: "Sur les Chemins Noirs", items: [{label:"Sur les Chemins Noirs", search:"Sur les Chemins Noirs 2023"}]},
+    ],
+  },
+  series: {
+    "🚔 Action / Thriller": [
+      { saga: "Jack Ryan", items: [
+        {label:"Jack Ryan S1", search:"Jack Ryan série Amazon Prime"},
+        {label:"Jack Ryan S2", search:"Jack Ryan série Amazon Prime"},
+        {label:"Jack Ryan S3", search:"Jack Ryan série Amazon Prime"},
+        {label:"Jack Ryan S4", search:"Jack Ryan série Amazon Prime"}
+      ]},
+      { saga: "Jack Ryan", items: [
+        {label:"Jack Ryan S1", search:"Jack Ryan Amazon Prime serie"},
+        {label:"Jack Ryan S2", search:"Jack Ryan Amazon Prime serie"},
+        {label:"Jack Ryan S3", search:"Jack Ryan Amazon Prime serie"},
+        {label:"Jack Ryan S4", search:"Jack Ryan Amazon Prime serie"}
+      ]},
+      { saga: "Cobra Kai", items: [
+        {label:"Cobra Kai S1", search:"Cobra Kai Netflix série"},
+        {label:"Cobra Kai S2", search:"Cobra Kai Netflix série"},
+        {label:"Cobra Kai S3", search:"Cobra Kai Netflix série"},
+        {label:"Cobra Kai S4", search:"Cobra Kai Netflix série"},
+        {label:"Cobra Kai S5", search:"Cobra Kai Netflix série"},
+        {label:"Cobra Kai S6", search:"Cobra Kai Netflix saison 6"}
+      ]},
+      { saga: "Reacher", items: [
+        {label:"Reacher S1", search:"Reacher"},
+        {label:"Reacher S2", search:"Reacher saison 2"},
+        {label:"Reacher S3", search:"Reacher saison 3"},
+        {label:"Reacher S4", search:"Reacher saison 4"}
+      ]},
+      { saga: "Person of Interest", items: [
+        {label:"Person of Interest S1", search:"Person of Interest"},
+        {label:"Person of Interest S2", search:"Person of Interest"},
+        {label:"Person of Interest S3", search:"Person of Interest"},
+        {label:"Person of Interest S4", search:"Person of Interest"},
+        {label:"Person of Interest S5", search:"Person of Interest"}
+      ]},
+      { saga: "The Day of the Jackal", items: [
+        {label:"The Day of the Jackal S1", search:"The Day of the Jackal 2024"},
+        {label:"The Day of the Jackal S2", search:"The Day of the Jackal serie"}
+      ]},
+      { saga: "Wayne", items: [{label:"Wayne S1", search:"Wayne série Amazon"}]},
+      { saga: "Taboo", items: [{label:"Taboo S1", search:"Taboo BBC serie"}]},
+      { saga: "Mobland", items: [{label:"Mobland S1", search:"Mobland serie"}]},
+      { saga: "Shooter", items: [
+        {label:"Shooter S1", search:"Shooter série TV 2016"},
+        {label:"Shooter S2", search:"Shooter série TV 2016"},
+        {label:"Shooter S3", search:"Shooter série TV 2016"}
+      ]},
+      { saga: "Limitless", items: [
+        {label:"Limitless S1", search:"Limitless série CBS 2015"}
+      ]},
+      { saga: "Arrow", items: [
+        {label:"Arrow S1", search:"Arrow série TV"},
+        {label:"Arrow S2", search:"Arrow série TV"},
+        {label:"Arrow S3", search:"Arrow série TV"},
+        {label:"Arrow S4", search:"Arrow série TV"},
+        {label:"Arrow S5", search:"Arrow série TV"},
+        {label:"Arrow S6", search:"Arrow série TV"},
+        {label:"Arrow S7", search:"Arrow série TV"},
+        {label:"Arrow S8", search:"Arrow série TV"}
+      ]},
+      { saga: "The Flash", items: [
+        {label:"The Flash S1", search:"The Flash série TV 2014"},
+        {label:"The Flash S2", search:"The Flash série TV 2014"},
+        {label:"The Flash S3", search:"The Flash série TV 2014"},
+        {label:"The Flash S4", search:"The Flash série TV 2014"},
+        {label:"The Flash S5", search:"The Flash série TV 2014"},
+        {label:"The Flash S6", search:"The Flash série TV 2014"},
+        {label:"The Flash S7", search:"The Flash série TV 2014"},
+        {label:"The Flash S8", search:"The Flash série TV 2014"},
+        {label:"The Flash S9", search:"The Flash série TV 2014"}
+      ]},
+      { saga: "Prison Break", items: [
+        {label:"Prison Break S1", search:"Prison Break série"},
+        {label:"Prison Break S2", search:"Prison Break série"},
+        {label:"Prison Break S3", search:"Prison Break série"},
+        {label:"Prison Break S4", search:"Prison Break série"},
+        {label:"Prison Break S5", search:"Prison Break série"}
+      ]},
+      { saga: "Iron Fist", items: [
+        {label:"Iron Fist S1", search:"Iron Fist Marvel série"},
+        {label:"Iron Fist S2", search:"Iron Fist Marvel série"}
+      ]},
+      { saga: "Daredevil", items: [
+        {label:"Daredevil S1", search:"Daredevil Marvel série"},
+        {label:"Daredevil S2", search:"Daredevil Marvel série"},
+        {label:"Daredevil S3", search:"Daredevil Marvel série"},
+        {label:"Daredevil : Born Again S1", search:"Daredevil Born Again"}
+      ]},
+      { saga: "The Boys", items: [
+        {label:"The Boys S1", search:"The Boys série Amazon"},
+        {label:"The Boys S2", search:"The Boys série Amazon"},
+        {label:"The Boys S3", search:"The Boys série Amazon"},
+        {label:"The Boys S4", search:"The Boys série Amazon"}
+      ]},
+    ],
+    "🔪 Crime / Drame": [
+      { saga: "Power", items: [
+        {label:"Power S1", search:"Power serie Starz 2014"},
+        {label:"Power S2", search:"Power serie Starz 2014"},
+        {label:"Power S3", search:"Power serie Starz 2014"},
+        {label:"Power S4", search:"Power serie Starz 2014"},
+        {label:"Power S5", search:"Power serie Starz 2014"},
+        {label:"Power S6", search:"Power serie Starz 2014"}
+      ]},
+      { saga: "Lucifer", items: [
+        {label:"Lucifer S1", search:"Lucifer serie Netflix"},
+        {label:"Lucifer S2", search:"Lucifer serie Netflix"},
+        {label:"Lucifer S3", search:"Lucifer serie Netflix"},
+        {label:"Lucifer S4", search:"Lucifer serie Netflix"},
+        {label:"Lucifer S5", search:"Lucifer serie Netflix"},
+        {label:"Lucifer S6", search:"Lucifer serie Netflix"}
+      ]},
+      { saga: "Dexter", items: [
+        {label:"Dexter (série originale)", search:"Dexter serie"},
+        {label:"Dexter: New Blood", search:"Dexter New Blood"},
+        {label:"Dexter: Origine du Mal", search:"Dexter Original Sin"},
+        {label:"Dexter: Resurrection", search:"Dexter Resurrection"}
+      ]},
+      { saga: "Wicked Minds", items: [
+        {label:"Wicked Minds S1", search:"Wicked Minds serie"},
+        {label:"Wicked Minds S2", search:"Wicked Minds serie"}
+      ]},
+      { saga: "No Limit", items: [
+        {label:"No Limit S1", search:"No Limit série française"},
+        {label:"No Limit S2", search:"No Limit série française"}
+      ]},
+      { saga: "Luke Cage", items: [
+        {label:"Luke Cage S1", search:"Luke Cage série Marvel"},
+        {label:"Luke Cage S2", search:"Luke Cage série Marvel"}
+      ]},
+      { saga: "Breaking Bad", items: [
+        {label:"Breaking Bad S1", search:"Breaking Bad série"},
+        {label:"Breaking Bad S2", search:"Breaking Bad série"},
+        {label:"Breaking Bad S3", search:"Breaking Bad série"},
+        {label:"Breaking Bad S4", search:"Breaking Bad série"},
+        {label:"Breaking Bad S5", search:"Breaking Bad série"}
+      ]},
+      { saga: "Peaky Blinders", items: [
+        {label:"Peaky Blinders S1", search:"Peaky Blinders série"},
+        {label:"Peaky Blinders S2", search:"Peaky Blinders série"},
+        {label:"Peaky Blinders S3", search:"Peaky Blinders série"},
+        {label:"Peaky Blinders S4", search:"Peaky Blinders série"},
+        {label:"Peaky Blinders S5", search:"Peaky Blinders série"},
+        {label:"Peaky Blinders S6", search:"Peaky Blinders série"}
+      ]},
+      { saga: "Suits - Dans la Cour des Grands", items: [
+        {label:"Suits S1", search:"Suits série TV"},
+        {label:"Suits S2", search:"Suits série TV"},
+        {label:"Suits S3", search:"Suits série TV"},
+        {label:"Suits S4", search:"Suits série TV"},
+        {label:"Suits S5", search:"Suits série TV"},
+        {label:"Suits S6", search:"Suits série TV"},
+        {label:"Suits S7", search:"Suits série TV"},
+        {label:"Suits S8", search:"Suits série TV"},
+        {label:"Suits S9", search:"Suits série TV"}
+      ]},
+      { saga: "Le Jeu du Calmar (Squid Game)", items: [
+        {label:"Squid Game S1", search:"Squid Game série"},
+        {label:"Squid Game S2", search:"Squid Game série saison 2"}
+      ]},
+      { saga: "La Casa de Papel", items: [
+        {label:"La Casa de Papel S1", search:"La Casa de Papel série"},
+        {label:"La Casa de Papel S2", search:"La Casa de Papel série"},
+        {label:"La Casa de Papel S3", search:"La Casa de Papel série"},
+        {label:"La Casa de Papel S4", search:"La Casa de Papel série"},
+        {label:"La Casa de Papel S5", search:"La Casa de Papel série"}
+      ]},
+      { saga: "Lupin", items: [
+        {label:"Lupin S1", search:"Lupin série Netflix"},
+        {label:"Lupin S2", search:"Lupin série Netflix"},
+        {label:"Lupin S3", search:"Lupin série Netflix"}
+      ]},
+      { saga: "Élite", items: [
+        {label:"Élite S1", search:"Elite série Netflix espagnole"},
+        {label:"Élite S2", search:"Elite série Netflix espagnole"},
+        {label:"Élite S3", search:"Elite série Netflix espagnole"},
+        {label:"Élite S4", search:"Elite série Netflix espagnole"},
+        {label:"Élite S5", search:"Elite série Netflix espagnole"},
+        {label:"Élite S6", search:"Elite série Netflix espagnole"},
+        {label:"Élite S7", search:"Elite série Netflix espagnole"},
+        {label:"Élite S8", search:"Elite série Netflix espagnole"}
+      ]},
+      { saga: "Outer Banks", items: [
+        {label:"Outer Banks S1", search:"Outer Banks Netflix série"},
+        {label:"Outer Banks S2", search:"Outer Banks Netflix série"},
+        {label:"Outer Banks S3", search:"Outer Banks Netflix série"},
+        {label:"Outer Banks S4", search:"Outer Banks Netflix série"},
+        {label:"Outer Banks S5 (à venir)", search:"Outer Banks Netflix saison 5 finale"}
+      ]},
+    ],
+    "😂 Comédie": [
+      { saga: "Big Bang Theory", items: [
+        {label:"Big Bang Theory S1", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S2", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S3", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S4", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S5", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S6", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S7", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S8", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S9", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S10", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S11", search:"The Big Bang Theory série"},
+        {label:"Big Bang Theory S12", search:"The Big Bang Theory série"}
+      ]},
+    ],
+  }
+};
+
+// ─── DONNÉES ANIMÉS ────────────────────────────────────────────────────────
+// statut : "termine" | "en-cours" | "en-attente" | "inacheve"
+const ANIME_DATA = {
+
+  "⚔️ Action / Aventure": [
+    { titre:"Naruto", search:"Naruto anime", saisons:5, statut:"termine", note:"220 épisodes. Suite directe : Naruto Shippuden." },
+    { titre:"Naruto Shippuden", search:"Naruto Shippuden anime", saisons:21, statut:"termine", note:"500 épisodes. Suite : Boruto." },
+    { titre:"Boruto: Naruto Next Generations", search:"Boruto Naruto Next Generations", saisons:1, statut:"inacheve", note:"Anime pausé en 2023. Manga 'Two Blue Vortex' en cours mais anime non confirmé." },
+    { titre:"Death Note", search:"Death Note anime", saisons:1, statut:"termine", note:"37 épisodes. Manga entièrement adapté. Œuvre complète." },
+    { titre:"Kuroko's Basket", search:"Kuroko no Basket anime", saisons:3, statut:"termine", note:"75 épisodes. Manga entièrement adapté par Production I.G." },
+    { titre:"Hunter x Hunter (2011)", search:"Hunter x Hunter 2011 anime", saisons:6, statut:"inacheve", note:"148 épisodes. S'arrête à l'arc Fourmi. Manga repris en 2022, anime non confirmé." },
+    { titre:"Bleach (série originale)", search:"Bleach anime 2004", saisons:16, statut:"termine", note:"366 épisodes. Arc final non adapté → voir Bleach TYBW." },
+    { titre:"Bleach: TYBW", search:"Bleach Thousand Year Blood War", saisons:4, episodesSortis:3, statut:"en-cours", datePrevu:"S4 'The Calamity' : Juillet 2026 (Disney+)", note:"S4 confirmée juillet 2026. Tite Kubo a promis des scènes inédites absentes du manga original." },
+    { titre:"Assassination Classroom", search:"Assassination Classroom anime", saisons:2, statut:"termine", note:"47 épisodes. Manga entièrement adapté. Œuvre complète." },
+    { titre:"Inazuma Eleven", search:"Inazuma Eleven anime", saisons:3, statut:"termine", note:"127 épisodes. Suivi par Inazuma Eleven GO (3 saisons) et Arès (2 saisons)." },
+    { titre:"Haikyu!!", search:"Haikyuu anime", saisons:4, statut:"termine", note:"85 épisodes + films de conclusion. Manga entièrement adapté." },
+    { titre:"Seven Deadly Sins", search:"Seven Deadly Sins anime", saisons:5, statut:"termine", note:"100 épisodes. Manga entièrement adapté. Spinoff 'Four Knights of the Apocalypse' en cours." },
+    { titre:"Mission: Yozakura Family", search:"Mission Yozakura Family anime", saisons:2, episodesSortis:2, statut:"en-cours", datePrevu:"S2 en cours — final prévu juin 2026 (Disney+)", note:"S1 : 27 épisodes (avr-oct 2024, Silver Link). S2 : 12 épisodes, débutée le 12 avril 2026. Arc : examen espion rang argent + arc du père Yozakura." },
+    { titre:"The Yakuza's Guide to Babysitting", search:"Yakuza Guide Babysitting anime", saisons:1, statut:"en-attente", proba:55, probaNote:"S1 terminée sept. 2022 (12 ep, Feel/Gaina). Manga 15 volumes en cours. Aucune annonce S2 malgré 1,6M d'exemplaires." },
+    { titre:"Hell's Paradise", search:"Hell's Paradise Jigokuraku anime MAPPA", saisons:2, statut:"en-attente", proba:75, probaNote:"S1 : 13 ep (avr-juil 2023, MAPPA/Crunchyroll). S2 : 12 ep (janv-mars 2026, terminée). S3 non encore confirmée officiellement — manga terminé en 13 volumes, il reste l'arc final à adapter. Sortie probable 2028 si S3 annoncée." },
+    { titre:"The God of High School", search:"The God of High School anime MAPPA", saisons:1, statut:"en-attente", proba:70, probaNote:"S1 : 13 épisodes (juil-sept 2020, MAPPA/Crunchyroll). Manhwa terminé en 2022. Aucune S2 officiellement annoncée malgré la forte demande des fans." },
+    { titre:"Valkyrie Apocalypse", search:"Record of Ragnarok anime", saisons:3, statut:"en-attente", proba:85, probaNote:"S4 non confirmée par Netflix mais très probable. Manga en cours, 4 combats restants identifiés. Estimée ~2027." },
+    { titre:"Vinland Saga S1 & S2", search:"Vinland Saga", saisons:2, statut:"en-attente", proba:75, probaNote:"S3 non confirmée. En janvier 2026, le créateur Yukimura a déclaré n'avoir reçu aucune info de MAPPA. Manga terminé en juillet 2025 (29 vol). S3 estimée 2026-2027 si annonce prochainement." },
+    { titre:"Baki Hanma", search:"Baki Hanma anime", saisons:2, statut:"termine", note:"Manga adapté. Conclusion avec le combat contre Pickle & Yujiro." },
+    { titre:"Monster", search:"Monster anime Naoki Urasawa", saisons:1, statut:"termine", note:"74 épisodes. Manga entièrement adapté par Madhouse. Œuvre complète." },
+    { titre:"Madan no Ou to Vanadis", search:"Madan no Ou to Vanadis", saisons:1, statut:"inacheve", note:"LN non terminé d'adapter. Pas d'annonce de suite depuis 2014." },
+    { titre:"Noblesse", search:"Noblesse anime", saisons:1, statut:"termine", note:"Webtoon adapté. Œuvre complète en 13 épisodes." },
+    { titre:"Hagure Yuusha no Estetica", search:"Hagure Yuusha no Estetica", saisons:1, statut:"inacheve", note:"LN non terminé d'adapter. Aucune suite prévue depuis 2012." },
+    { titre:"Eyeshield 21", search:"Eyeshield 21 anime", saisons:4, statut:"inacheve", note:"145 épisodes. Manga terminé mais anime s'arrête avant la fin." },
+    { titre:"Saikyou Onmyouji no Isekai Tenseiki S1", search:"Saikyou Onmyouji Isekai Tenseiki", saisons:1, statut:"en-attente", proba:60, probaNote:"S2 non confirmée. Studio Blanc n'a pas fait d'annonce. Annonce possible 2026." },
+    { titre:"The Ossan Newbie Adventurer", search:"Ossan Newbie Adventurer anime", saisons:1, statut:"en-attente", proba:50, probaNote:"Anime récent, LN en cours. Pas d'annonce de suite pour l'instant." },
+    { titre:"Lookism S1", search:"Lookism anime Netflix", saisons:1, statut:"en-attente", proba:55, probaNote:"Webtoon très populaire. Netflix n'a pas confirmé de S2 mais succès important." },
+    { titre:"Buchigiri", search:"Buchigiri anime", saisons:1, statut:"en-attente", proba:45, probaNote:"Original MAPPA 2023. Pas de source manga à adapter, suite incertaine." },
+    { titre:"Solo Leveling S1 & S2", search:"Solo Leveling anime", saisons:2, statut:"en-attente", proba:70, probaNote:"S2 terminée mars 2025. Pas de S3 annoncée. A-1 Pictures orienterait la suite vers un film théâtral (late 2026/2027) plutôt qu'une saison TV, inspiré du succès de Demon Slayer." },
+    { titre:"Wind Breaker S1 & S2", search:"Wind Breaker anime 2024", saisons:2, statut:"en-attente", proba:75, probaNote:"S2 terminée juin 2025. Manga en cours (14+ tomes), matière pour S3. Pas d'annonce." },
+    { titre:"Black Clover S1→S4", search:"Black Clover anime", saisons:5, episodesSortis:4, statut:"en-cours", datePrevu:"S5 : été/automne 2026 (Crunchyroll)", note:"Confirmé Anime Expo 2025 + Jump Festa 2026. Studio Pierrot. Arc Spade Kingdom (ep.171+). Pas de date exacte officiellement précisée." },
+    { titre:"Sakamoto's Days S1", search:"Sakamoto Days anime", saisons:2, episodesSortis:1, statut:"en-cours", datePrevu:"S2 : date TBA (fin 2026 estimée)", note:"S1 : 2 cours (janv-mars + juil-sept 2025, 22 ep, TMS Entertainment/Netflix). S2 annoncée à Jump Festa 2026 avec teaser. Date exacte non encore communiquée." },
+    { titre:"Oshi No Ko S1, S2 & S3", search:"Oshi No Ko anime", saisons:3, statut:"termine", note:"S3 (11 épisodes) diffusée du 14 janv. au 25 mars 2026 sur ADN/Crunchyroll. Manga terminé en 16 volumes. Œuvre complète." },
+    { titre:"Dragon Raja S1 & S2", search:"Dragon Raja anime", saisons:3, episodesSortis:2, statut:"en-cours", datePrevu:"S3 'Black Moon Tide' : 2028", note:"S2 sortie juillet 2025 sur Crunchyroll (24 ep). S3 confirmée en production août 2025." },
+    { titre:"The Healer Banned from His World S1", search:"The Healer Banned from Another World", saisons:1, statut:"en-attente", proba:50, probaNote:"LN en cours. Suite dépend du succès de la S1." },
+    { titre:"Tomodachi Game S1", search:"Tomodachi Game anime", saisons:1, statut:"en-attente", proba:65, probaNote:"Manga en cours avec beaucoup de matière. S1 bien accueillie mais pas d'annonce." },
+    { titre:"Scum's Wish", search:"Scum's Wish anime", saisons:1, statut:"termine", note:"12 épisodes. Manga entièrement adapté. Œuvre complète." },
+  ],
+
+  "❤️ Romance / Drame": [
+    { titre:"Let's Play", search:"Let's Play anime 2025 OLM", saisons:1, statut:"en-attente", proba:60, probaNote:"S1 terminée déc. 2025 (12 ep, OLM/Crunchyroll). Webtoon reprend sur nouvelle plateforme automne 2025. S2 non annoncée." },
+    { titre:"Inexpressive Kashiwada and Expressive Oota", search:"Inexpressive Kashiwada Expressive Oota anime", saisons:1, statut:"en-attente", proba:55, probaNote:"S1 terminée déc. 2025 (12 ep, Studio Polon). Manga terminé en 10 volumes. S2 non annoncée officiellement, sort possible si Blu-ray/streaming performent." },
+    { titre:"This Art Club Has a Problem!", search:"This Art Club Has a Problem anime", saisons:1, statut:"en-attente", proba:30, probaNote:"S1 terminée sept. 2016 (12 ep, Feel). Manga terminé en 12 volumes. Aucune annonce depuis 2016. Chances de S2 très faibles." },
+    { titre:"Blue Box S1 & S2", search:"Blue Box anime Netflix", saisons:2, episodesSortis:1, statut:"en-cours", datePrevu:"S2 automne 2026", note:"S1 : 25 épisodes sur Netflix (2024). S2 annoncée au Jump Festa 2026 pour l'automne 2026, premier visuel dévoilé. Manga en cours chez Shonen Jump." },
+    { titre:"Chitose Is in the Ramune Bottle", search:"Chitose Is in the Ramune Bottle anime Chitose-kun wa Ramune Bin no Naka", saisons:2, episodesSortis:1, statut:"en-cours", datePrevu:"Partie 2 : 2026 TBA (Crunchyroll)", note:"S1 Partie 1 : 13 épisodes (oct 2025 - mars 2026, Studio Feel/Crunchyroll). Partie 2 confirmée pour 2026 sans date exacte. LN en 9 volumes + manga terminé en 8 volumes." },
+    { titre:"Netoge no Yome wa Onnanoko ja Nai to Omotta?", search:"Netoge no Yome wa Onnanoko ja Nai to Omotta anime And You Thought There Is Never a Girl Online", saisons:1, statut:"en-attente", proba:20, probaNote:"S1 : 12 épisodes (2016, Project No.9/Crunchyroll). Light novel terminé en 23 volumes. Aucune S2 annoncée depuis 9 ans. Probabilité très faible." },
+    { titre:"A Condition Called Love", search:"A Condition Called Love anime Hananoi-kun to Koi no Yamai", saisons:1, statut:"en-attente", proba:40, probaNote:"S1 : 12 épisodes (avr-juin 2024, East Fish Studio/Crunchyroll). Manga terminé en 2025 (vol.17, ch.72). Aucune S2 annoncée. Manga presque intégralement couvert par la S1 → peu de matière pour une suite." },
+    { titre:"Insomniacs After School", search:"Insomniacs After School anime Kimi wa Houkago Insomnia", saisons:1, statut:"en-attente", proba:35, probaNote:"S1 : 13 épisodes (avr-juil 2023, Liden Films/HIDIVE). Manga terminé en 14 volumes (2023). Aucune S2 annoncée. Probabilité faible car l'anime adapte déjà une bonne partie du manga." },
+    { titre:"Tamon's B-Side", search:"Tamon's B-Side anime Tamon-kun Ima Docchi JC Staff", saisons:1, statut:"en-attente", proba:65, probaNote:"S1 : 13 épisodes (janv-mars 2026, J.C.Staff/Crunchyroll). Manga shojo en cours (15 vol., Hana to Yume/Hakusensha). Succès notable (2,6M copies circ. en jan. 2026) + adaptation scénique annoncée sept. 2026 → bonne probabilité de S2." },
+    { titre:"Please Put Them On, Takamine-san", search:"Please Put Them On Takamine-san anime Haite Kudasai", saisons:1, statut:"en-attente", proba:55, probaNote:"S1 : 12 épisodes (avr-juin 2025, Liden Films). Manga en cours avec 11 volumes (fév. 2026). S2 non annoncée officiellement mais manga actif et réception positive → possible." },
+    { titre:"My Friend's Little Sister Has It In for Me!", search:"My Friend's Little Sister Has It In for Me anime Tomodachi no Imouto", saisons:1, statut:"en-attente", proba:50, probaNote:"S1 : 12 épisodes (oct-déc 2025, Studio Blade/Crunchyroll). LN en 10 volumes (terminé). Aucune S2 annoncée officiellement." },
+    { titre:"Engage Kiss", search:"Engage Kiss anime A-1 Pictures", saisons:1, statut:"en-attente", proba:30, probaNote:"S1 : 13 épisodes (juil-sept 2022, A-1 Pictures/Crunchyroll). Anime original sans source manga/LN. Aucune S2 annoncée depuis 2022, probabilité faible." },
+    { titre:"In the Clear Moonlit Dusk", search:"In the Clear Moonlit Dusk anime Uruwashi no Yoi no Tsuki", saisons:1, statut:"en-attente", proba:60, probaNote:"S1 terminée mars 2026 (12 ep, East Fish Studio/Crunchyroll). Manga en 10 volumes (terminé). S2 non annoncée, sort possible selon succès Blu-ray/streaming." },
+    { titre:"You and I Are Polar Opposites", search:"You and I Are Polar Opposites anime Seihantai na Kimi to Boku", saisons:2, episodesSortis:1, statut:"en-cours", datePrevu:"S2 le 5 juillet 2026 (Crunchyroll)", note:"S1 : 12 épisodes (janv-mars 2026, Lapin Track, Crunchyroll). S2 annoncée à l'AnimeJapan 2026 pour le 5 juillet 2026. Manga terminé en nov. 2024." },
+    { titre:"A Star Brighter Than the Sun", search:"A Star Brighter Than the Sun anime Taiyou Yori mo Mabushii Hoshi", saisons:2, episodesSortis:1, statut:"en-cours", datePrevu:"S2 date TBA", note:"S1 : 12 épisodes (oct-déc 2025, Studio KAI, Amazon Prime Video). S2 annoncée le 18 déc. 2025 après le final S1. Manga shojo en 13 volumes, de Kazune Kawahara." },
+    { titre:"Girlfriend, Girlfriend", search:"Girlfriend Girlfriend anime Kanojo mo Kanojo", saisons:3, episodesSortis:3, statut:"en-cours", datePrevu:"S3 en cours — printemps 2026 (Crunchyroll)", note:"S3 débutée le 8 avril 2026. Studio Tezuka Productions. 12 épisodes prévus." },
+    { titre:"Kaguya-sama: Love is War", search:"Kaguya-sama Love is War anime", saisons:3, episodesSortis:3, statut:"en-cours", datePrevu:"Film de conclusion (date TBA)", note:"S1→S3 (2019-2022, A-1 Pictures) + Film 'The First Kiss That Never Ends' (2022) + Épisode spécial 'Stairway to Adulthood' (31 déc. 2025). Film de conclusion annoncé lors de l'épisode spécial. Manga terminé en 28 volumes." },
+    { titre:"Dealing with Mikadono Sisters Is a Breeze", search:"Mikadono Sisters Breeze anime", saisons:1, statut:"en-attente", proba:60, probaNote:"S1 terminée sept. 2025 (12 ep, P.A. Works). Manga en cours avec 17 volumes. S2 non annoncée mais bonne réception." },
+    { titre:"The Tunnel to Summer, the Exit of Goodbyes", search:"Tunnel to Summer Exit of Goodbyes anime film", saisons:0, film:true, statut:"termine", note:"Film (2022, CLAP, 83 min). Adapté du light novel de Mei Hachimoku. Prix Paul Grimault au Festival d'Annecy 2023." },
+    { titre:"ReLIFE", search:"ReLIFE anime", saisons:1, statut:"termine", note:"13 épisodes (2016) + 4 OVA 'Kanketsuhen' (2018). Manga entièrement adapté. Œuvre complète." },
+    { titre:"Hello World", search:"Hello World anime film", saisons:0, film:true, statut:"termine", note:"Film (2019). Œuvre originale." },
+    { titre:"Pseudo Harem", search:"Pseudo Harem anime", saisons:1, statut:"en-attente", proba:55, probaNote:"Manga en cours. S1 courte (12 ep). Suite possible si succès confirmé." },
+    { titre:"Shikimori's Not Just a Cutie", search:"Shikimori Not Just a Cutie", saisons:1, statut:"termine", note:"Manga entièrement adapté. Fin heureuse, œuvre complète." },
+    { titre:"Je veux manger ton pancréas", search:"I Want to Eat Your Pancreas anime", saisons:0, film:true, statut:"termine", note:"Film (2018). Roman et manga entièrement adaptés." },
+    { titre:"Nisekoi S1 & S2", search:"Nisekoi anime", saisons:2, statut:"termine", note:"Manga entièrement adapté par Shaft. Œuvre complète." },
+    { titre:"Blue Spring Ride", search:"Blue Spring Ride anime", saisons:1, statut:"inacheve", note:"Manga terminé mais beaucoup d'arcs non adaptés. Pas d'annonce depuis 2014." },
+    { titre:"Wise Man's Grandchild", search:"Wise Man's Grandchild anime", saisons:1, statut:"en-attente", proba:35, probaNote:"LN en cours. S1 peu mémorable, chances de suite faibles." },
+    { titre:"Akashi Records", search:"Akashic Records of Bastard Magic Instructor", saisons:1, statut:"en-attente", proba:45, probaNote:"LN très long non adapté. Pas d'annonce depuis 2017." },
+    { titre:"365 Days to the Wedding S1", search:"365 Days to the Wedding anime", saisons:1, statut:"en-attente", proba:55, probaNote:"Manga en cours. Romance originale appréciée, suite non annoncée." },
+    { titre:"Our Dating Story", search:"Our Dating Story anime", saisons:1, statut:"en-attente", proba:60, probaNote:"LN populaire. S1 bien accueillie, matière disponible pour S2." },
+    { titre:"Kimi ni Todoke S1 S2 S3", search:"Kimi ni Todoke anime", saisons:3, statut:"termine", note:"Manga entièrement adapté. S3 Netflix (2023). Œuvre complète." },
+    { titre:"Horimiya S1 & S2", search:"Horimiya anime", saisons:2, statut:"termine", note:"Manga adapté + Horimiya: The Missing Pieces (arcs bonus)." },
+    { titre:"Romantic Killer", search:"Romantic Killer anime Netflix", saisons:1, statut:"en-attente", proba:50, probaNote:"Manga terminé. Netflix n'a pas confirmé S2 malgré succès." },
+    { titre:"Higehiro", search:"Higehiro anime", saisons:1, statut:"termine", note:"LN entièrement adapté. Œuvre complète." },
+    { titre:"Domestic Girlfriend", search:"Domestic Girlfriend anime", saisons:1, statut:"inacheve", note:"Manga terminé mais énorme partie non adaptée. Pas d'annonce depuis 2019." },
+    { titre:"More Than a Married Couple", search:"More Than a Married Couple anime", saisons:1, statut:"en-attente", proba:60, probaNote:"Manga en cours. S1 populaire, matière pour S2 disponible." },
+    { titre:"The Devil Is a Part-Timer S1 S2 S3", search:"The Devil Is a Part-Timer anime", saisons:3, statut:"en-attente", proba:55, probaNote:"LN terminé. S3 sortie 2023. Suite possible mais non annoncée." },
+    { titre:"Ao Chan Can't Study S1", search:"Ao Chan Can't Study anime", saisons:1, statut:"termine", note:"Manga entièrement adapté (12 ep courts). Œuvre complète." },
+    { titre:"The Girl I Like Forgot Her Glasses S1", search:"The Girl I Like Forgot Her Glasses anime", saisons:1, statut:"en-attente", proba:50, probaNote:"Manga en cours. S1 mignonne, suite non annoncée." },
+    { titre:"Yakuza Fiance S1", search:"Yakuza Fiance anime", saisons:1, statut:"en-attente", proba:55, probaNote:"Manga en cours. Série récente, suite dépend du succès." },
+    { titre:"Rascal Doesn't Dream of Santa Claus", search:"Rascal Does Not Dream of Santa Claus anime", saisons:1, statut:"en-cours", datePrevu:"Film 2024/2025", note:"Film dans la saga Rascal. La saga continue après Bunny Girl Senpai." },
+    { titre:"Golden Time", search:"Golden Time anime", saisons:1, statut:"termine", note:"LN entièrement adapté. 24 épisodes. Œuvre complète." },
+    { titre:"Amagami SS", search:"Amagami SS anime", saisons:2, statut:"termine", note:"Jeu entièrement adapté. Œuvre complète." },
+    { titre:"A Girl and Her Guard Dog", search:"A Girl and Her Guard Dog anime", saisons:1, statut:"en-attente", proba:55, probaNote:"Manga en cours. S1 bien accueillie, suite possible." },
+    { titre:"Can a Boy-Girl Friendship Survive", search:"Can a Boy Girl Friendship Survive anime", saisons:1, statut:"en-attente", proba:60, probaNote:"Manga populaire en cours. Pas d'annonce officielle." },
+    { titre:"Tsuki ga Kirei", search:"Tsuki ga Kirei anime", saisons:1, statut:"termine", note:"Anime original Feel. 12 épisodes. Œuvre complète avec OVA." },
+    { titre:"A Silent Voice", search:"A Silent Voice anime film", saisons:0, film:true, statut:"termine", note:"Film (2016) KyoAni. Manga entièrement adapté." },
+    { titre:"Jun, la voix du cœur", search:"A Whisker Away anime film", saisons:0, film:true, statut:"termine", note:"Film Netflix (2020)." },
+    { titre:"Watari-kun Is About to Collapse", search:"Watari-kun no xx ga Houkai Sunzen anime", saisons:1, statut:"en-attente", proba:40, probaNote:"Manga terminé. S1 peu connue, chances de suite faibles." },
+    { titre:"TONIKAWA: Over the Moon For You", search:"TONIKAWA Over the Moon For You anime", saisons:2, statut:"en-attente", proba:75, probaNote:"Manga en cours chez Viz/Shonen Sunday. S2 bien reçue, matière pour S3." },
+    { titre:"Just Because!", search:"Just Because anime", saisons:1, statut:"termine", note:"Anime original Pine Jam. 12 épisodes. Œuvre complète." },
+    { titre:"Welcome to Japan, Ms. Elf!", search:"Welcome to Japan Ms Elf anime", saisons:1, statut:"en-attente", proba:50, probaNote:"LN en cours. S1 sympathique, suite non annoncée." },
+    { titre:"Kono Oto Tomare! S1 & S2", search:"Kono Oto Tomare anime", saisons:2, statut:"en-attente", proba:55, probaNote:"Manga terminé. Beaucoup de matière non adaptée. Pas d'annonce depuis 2019." },
+    { titre:"A Galaxy Next Door S1", search:"A Galaxy Next Door anime", saisons:1, statut:"en-attente", proba:55, probaNote:"Manga en cours. S1 appréciée, suite non confirmée." },
+    { titre:"Our Last Crusade or the Rise of a New World S1 S2", search:"Our Last Crusade Rise of New World anime", saisons:2, statut:"en-attente", proba:60, probaNote:"LN en cours. S2 sortie 2023. Matière pour S3 disponible." },
+    { titre:"Masamune-kun's Revenge S1 S2", search:"Masamune-kun Revenge anime", saisons:2, statut:"termine", note:"Manga entièrement adapté avec S2 (2023). Œuvre complète." },
+    { titre:"I Have a Crush at Work S1", search:"I Have a Crush at Work anime", saisons:1, statut:"en-attente", proba:50, probaNote:"Manga en cours. S1 récente. Suite possible si succès confirmé." },
+    { titre:"Yamada-kun to Lv999 S1", search:"Yamada-kun to Lv999 anime", saisons:1, statut:"en-attente", proba:70, probaNote:"Manga en cours. S1 très bien reçue. Suite probable mais non annoncée." },
+    { titre:"Im Getting Married to a Girl I Hate S1", search:"Im Getting Married to a Girl I Hate in My Class anime", saisons:1, statut:"en-attente", proba:60, probaNote:"Manga en cours. Bonne réception, suite non confirmée." },
+    { titre:"The Ice Guy and His Cool Female Colleague S1", search:"The Ice Guy and His Cool Female Colleague anime", saisons:1, statut:"en-attente", proba:55, probaNote:"Manga en cours. S1 agréable mais peu de bruit pour une S2." },
+    { titre:"Shiunji Family Children S1", search:"Shiunji Family Children anime", saisons:1, statut:"en-cours", datePrevu:"S2 2027", note:"S2 confirmée pour 2027 selon les annonces." },
+    { titre:"Hokkaido Gals Are Super Adorable S1", search:"Hokkaido Gals Super Adorable anime", saisons:1, statut:"en-attente", proba:60, probaNote:"Manga en cours. S1 populaire, pas d'annonce officielle pour S2." },
+    { titre:"A Sign of Affection S1", search:"A Sign of Affection anime", saisons:1, statut:"en-attente", proba:65, probaNote:"Manga en cours (Aria/Kadokawa). S1 bien accueillie sur Disney+. Suite probable." },
+    { titre:"Medaka Is Impervious to My Charms S1", search:"Medaka Kuroiwa Impervious to My Charms anime", saisons:1, statut:"en-attente", proba:60, probaNote:"Manga en cours. Série récente, pas encore d'annonce de S2." },
+    { titre:"Kubo Won't Let Me Be Invisible S1", search:"Kubo Won't Let Me Be Invisible anime", saisons:1, statut:"en-attente", proba:55, probaNote:"Manga terminé. Matière pour S2 disponible mais non annoncée." },
+    { titre:"Days with My Stepsister S1", search:"Days with My Stepsister anime", saisons:1, statut:"en-attente", proba:60, probaNote:"LN en cours. S1 appréciée, suite non confirmée." },
+    { titre:"Alya Sometimes Hides Her Feelings in Russian S1", search:"Alya Sometimes Hides Her Feelings in Russian anime", saisons:1, statut:"en-cours", datePrevu:"S2 2027 (repoussée)", note:"S2 initialement prévue 2026, repoussée en 2027 selon annonces récentes." },
+    { titre:"Rent a Girlfriend S1→S5", search:"Rent a Girlfriend anime", saisons:5, episodesSortis:5, statut:"en-cours", datePrevu:"S5 en cours — final le 24 juin 2026 (Crunchyroll)", note:"S5 débutée le 8 avril 2026, 12 épisodes. Arc Hawaiians, 2e cour. Manga 45 tomes. Final S5 prévu le 24 juin 2026." },
+    { titre:"My Dress-Up Darling S1 & S2", search:"My Dress Up Darling anime", saisons:2, statut:"en-attente", proba:70, probaNote:"S2 terminée en sept. 2025. Manga ~29 ch non adaptés. S3 probable ~2027-28." },
+    { titre:"The Fragrant Flower Blooms with Dignity S1", search:"Fragrant Flower Blooms with Dignity anime", saisons:1, statut:"en-attente", proba:75, probaNote:"S2 non annoncée (mars 2026). Manga en cours (20 vol), S1 a adapté ~40 ch. Top Netflix dans 26 pays. CloverWorks attendrait les chiffres Blu-ray. S2 estimée 2027." },
+    { titre:"A Couple of Cuckoos S1 S2", search:"A Couple of Cuckoos anime", saisons:2, statut:"en-attente", proba:55, probaNote:"Manga en cours. S2 sortie. Suite possible mais non confirmée." },
+    { titre:"Love Is Indivisible by Twins S1", search:"Love Is Indivisible by Twins anime", saisons:1, statut:"en-attente", proba:55, probaNote:"Manga en cours. S1 récente, suite non annoncée." },
+    { titre:"Honey Lemon Soda S1", search:"Honey Lemon Soda anime", saisons:1, statut:"en-attente", proba:60, probaNote:"Manga termine bientôt (annoncé 2026). Suite possible si succès de S1." },
+    { titre:"The Angel Next Door Spoils Me Rotten S1", search:"The Angel Next Door Spoils Me Rotten anime", saisons:2, episodesSortis:2, statut:"en-cours", datePrevu:"S2 en cours (Crunchyroll, printemps 2026)", note:"S2 : 12 épisodes, débutée le 3 avril 2026 sur Crunchyroll. Studio Project No.9 / Toho. Nouveau réalisateur : Chihiro Kumano." },
+    { titre:"My Awkward Senpai", search:"My Awkward Senpai anime", saisons:1, statut:"en-attente", proba:55, probaNote:"Manga en cours. S1 récente, pas encore d'annonce de S2." },
+    { titre:"Takamine-san (ep. 5)", search:"Takamine-san wa Te ni Torenai anime", saisons:1, statut:"en-cours", datePrevu:"En diffusion 2025", note:"Actuellement en diffusion (ep. 5 en cours). Manga en cours." },
+    { titre:"Classroom of the Elite S1 S2 S3", search:"Classroom of the Elite anime", saisons:4, episodesSortis:4, statut:"en-cours", datePrevu:"S4 en cours — final le 24 juin 2026 (Crunchyroll)", note:"S4 (Year 2, 1er semestre) : 16 épisodes, débutée le 1er avril 2026 avec 4 épisodes simultanés. Studio Lerche. Arc : Ayanokoji en 2e année face à de nouveaux rivaux de la Chambre Blanche." },
+    { titre:"I Got a Cheat Skill in Another World S1", search:"I Got a Cheat Skill in Another World anime", saisons:1, statut:"en-attente", proba:45, probaNote:"LN en cours. S1 peu mémorable, chances de suite modestes." },
+  ],
+};
+
+let animeChecked = {};
+try { animeChecked = JSON.parse(localStorage.getItem('animeChecked_v1') || '{}'); } catch(e) {}
+
+function saveAnimeChecked() {
+  try { localStorage.setItem('animeChecked_v1', JSON.stringify(animeChecked)); } catch(e) {}
+}
+
+function toggleAnimeSaison(key) {
+  animeChecked[key] = !animeChecked[key];
+  saveAnimeChecked();
+  // Retrouver le chip via data-akey plutôt que CSS.escape sur onclick
+  const chip = document.querySelector(`.sl-chip[data-akey="${key.replace(/"/g,'&quot;')}"]`);
+  if (chip) chip.classList.toggle('checked', animeChecked[key]);
+  const row = chip ? chip.closest('.season-row') : null;
+  if (row) refreshAnimeGenreBar(row);
+  updateGlobalCounter();
+}
+
+function refreshAnimeGenreBar(row) {
+  const block = row.closest('.genre-block');
+  if (!block) return;
+  const chips = [...block.querySelectorAll('.sl-chip[data-akey]')];
+  const done = chips.filter(c => animeChecked[c.dataset.akey]).length;
+  const total = chips.length;
+  const pct = total > 0 ? (done/total)*100 : 0;
+  const color = done === total && total > 0 ? '#4ade80' : '#E8C547';
+  const gc = block.querySelector('.genre-count');
+  if (gc) { gc.textContent = `${done}/${total}`; gc.style.color = color; }
+  const bar = block.querySelector('.genre-bar');
+  if (bar) { bar.style.width = pct + '%'; bar.style.background = color; }
+}
+
+function getStatusHTML(anime) {
+  const { statut, datePrevu, proba } = anime;
+  const labels = { 'termine':'TERMINÉ','en-cours':'EN COURS','en-attente':'EN ATTENTE','inacheve':'INACHEVÉ' };
+  let html = `<span class="status-badge status-${statut}">${labels[statut]||statut}</span>`;
+  if (statut === 'en-cours' && datePrevu) {
+    html += `<span class="sl-date">📅 ${datePrevu}</span>`;
+  } else if (statut === 'en-attente' && proba !== undefined) {
+    const pc = proba >= 80 ? '#4ade80' : proba >= 50 ? '#facc15' : '#f87171';
+    html += `<span class="sl-proba" style="color:${pc}">${proba}% suite</span>
+      <div class="proba-bar-bg"><div class="proba-bar" style="width:${proba}%;background:${pc}"></div></div>`;
+  }
+  return html;
+}
+
+function renderAnime() {
+  const search = document.getElementById('search').value.toLowerCase().trim();
+  const content = document.getElementById('content');
+  updateGlobalCounter();
+
+  // ── MODE CARTE ──
+  if (currentView === 'carte') {
+    renderCarteAnime(search);
+    return;
+  }
+
+  let html = '', anyVisible = false;
+
+  Object.entries(ANIME_DATA).forEach(([genre, animes]) => {
+    const filtered = search ? animes.filter(a => a.titre.toLowerCase().includes(search)) : animes;
+    if (!filtered.length) return;
+    anyVisible = true;
+
+    // Comptage : 1 point par saison cochée, ou 1 pour les films
+    let gDone = 0, gTotal = 0;
+    filtered.forEach(a => {
+      const saisonsDispo = a.episodesSortis !== undefined ? a.episodesSortis : (a.film ? 1 : a.saisons);
+      if (a.film) {
+        if (saisonsDispo > 0) {
+          gTotal++;
+          if (animeChecked[`anime||${a.titre}||Film`]) gDone++;
+        }
+      } else {
+        for (let s = 1; s <= saisonsDispo; s++) {
+          gTotal++;
+          if (animeChecked[`anime||${a.titre}||S${s}`]) gDone++;
+        }
+      }
+    });
+    const gPct = gTotal > 0 ? (gDone/gTotal)*100 : 0;
+    const gColor = gDone === gTotal && gTotal > 0 ? '#4ade80' : '#E8C547';
+
+    html += `<div class="genre-block">
+      <div class="genre-header">
+        <span class="genre-name">${genre}</span>
+        <span class="genre-count" style="color:${gColor}">${gDone}/${gTotal}</span>
+        <div class="genre-bar-bg"><div class="genre-bar" style="width:${gPct}%;background:${gColor}"></div></div>
+      </div><div class="saga-block">`;
+
+    filtered.forEach(anime => {
+      const cached = posterCache[anime.search];
+      let posterHTML;
+      if (cached !== undefined) {
+        posterHTML = cached
+          ? `<div class="sl-poster"><img src="${cached}" alt="" onerror="this.parentElement.innerHTML='🎌'"/></div>`
+          : `<div class="sl-poster">🎌</div>`;
+      } else {
+        posterHTML = `<div class="sl-poster loading" data-search="${anime.search.replace(/"/g,'&quot;')}"></div>`;
+      }
+
+      // Chips saisons (ou "Film" si c'est un film)
+      // episodesSortis : nombre de saisons dont les épisodes sont sortis (défaut = toutes)
+      const saisonsDispo = anime.episodesSortis !== undefined ? anime.episodesSortis : (anime.film ? 1 : anime.saisons);
+
+      let chipsHTML = '';
+      if (anime.film) {
+        // Film : chip toujours présent sauf si episodesSortis explicitement mis à 0
+        if (saisonsDispo > 0) {
+          const key = `anime||${anime.titre}||Film`;
+          const isSeen = !!animeChecked[key];
+          const keyAttr = key.replace(/"/g,'&quot;');
+          chipsHTML = `<div class="sl-chip${isSeen?' checked':''}" data-akey="${keyAttr}" onclick="event.stopPropagation();toggleAnimeSaison(this.dataset.akey)">
+            <span class="sl-chip-label">Film</span>
+            <div class="sl-chip-box"><span class="sl-chip-check">✓</span></div>
+          </div>`;
+        } else {
+          chipsHTML = `<div class="sl-chip-soon">Pas encore sorti</div>`;
+        }
+      } else {
+        for (let s = 1; s <= anime.saisons; s++) {
+          if (s <= saisonsDispo) {
+            // Saison sortie → chip cliquable
+            const key = `anime||${anime.titre}||S${s}`;
+            const isSeen = !!animeChecked[key];
+            const keyAttr = key.replace(/"/g,'&quot;');
+            chipsHTML += `<div class="sl-chip${isSeen?' checked':''}" data-akey="${keyAttr}" onclick="event.stopPropagation();toggleAnimeSaison(this.dataset.akey)">
+              <span class="sl-chip-label">S${s}</span>
+              <div class="sl-chip-box"><span class="sl-chip-check">✓</span></div>
+            </div>`;
+          } else {
+            // Saison pas encore sortie → badge grisé non cliquable
+            chipsHTML += `<div class="sl-chip sl-chip-upcoming">
+              <span class="sl-chip-label">S${s}</span>
+              <div class="sl-chip-box" style="border-style:dashed;opacity:0.4;"></div>
+            </div>`;
+          }
+        }
+      }
+
+      html += `<div class="season-row">
+        ${posterHTML}
+        <span class="sl-title">${anime.titre}</span>
+        <div class="sl-seasons">${chipsHTML}</div>
+        <div class="sl-status">${getStatusHTML(anime)}</div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  if (!anyVisible) {
+    const q = document.getElementById('search').value;
+    html = `<div class="empty"><div class="empty-icon">🎌</div><div class="empty-text">Aucun résultat pour «<span> ${q} </span>»</div></div>`;
+  }
+  content.innerHTML = html;
+  loadVisiblePosters();
+}
+
+let activeTab = 'films';
+let checked = {};
+try { checked = JSON.parse(localStorage.getItem('cinematheque_v3') || '{}'); } catch(e) {}
+
+// Pré-cocher les 6 saisons de Power si pas encore fait
+(function() {
+  const sagaName = "Power";
+  let modified = false;
+  for (let i = 0; i < 6; i++) {
+    const key = `series||${sagaName}||${i}`;
+    if (!checked[key]) { checked[key] = true; modified = true; }
+  }
+  // Pré-cocher Homefront et Zootopie 2
+  const precheck = ['films||Homefront||0', 'films||Zootopie||1', "anime||The Yakuza's Guide to Babysitting||S1", "anime||Let's Play||S1", "anime||This Art Club Has a Problem!||S1", "anime||The Tunnel to Summer, the Exit of Goodbyes||Film"];
+  precheck.forEach(k => { if (!checked[k]) { checked[k] = true; modified = true; } });
+  if (modified) {
+    try { localStorage.setItem('cinematheque_v3', JSON.stringify(checked)); } catch(e) {}
+  }
+})();
+
+// Classement data
+let topFilms = new Array(10).fill(null);
+let topSeries = new Array(10).fill(null);
+let topAnime = new Array(10).fill(null);
+try { topFilms = JSON.parse(localStorage.getItem('topFilms') || 'null') || new Array(10).fill(null); } catch(e) {}
+try { topSeries = JSON.parse(localStorage.getItem('topSeries') || 'null') || new Array(10).fill(null); } catch(e) {}
+try { topAnime = JSON.parse(localStorage.getItem('topAnime') || 'null') || new Array(10).fill(null); } catch(e) {}
+
+let modalSlotIndex = null;
+let modalSlotType = null;
+
+function saveTop() {
+  try {
+    localStorage.setItem('topFilms', JSON.stringify(topFilms));
+    localStorage.setItem('topSeries', JSON.stringify(topSeries));
+    localStorage.setItem('topAnime', JSON.stringify(topAnime));
+  } catch(e) {}
+}
+
+// ── À Découvrir ──
+let decouvrir = [];
+try { decouvrir = JSON.parse(localStorage.getItem('cinematheque_decouvrir') || '[]'); } catch(e) {}
+
+function saveDecouvrir() {
+  try { localStorage.setItem('cinematheque_decouvrir', JSON.stringify(decouvrir)); } catch(e) {}
+}
+
+function addDecouvrir() {
+  const titleEl = document.getElementById('dec-title');
+  const typeEl = document.getElementById('dec-type');
+  const noteEl = document.getElementById('dec-note');
+  const title = titleEl.value.trim();
+  if (!title) return;
+  decouvrir.push({ title, type: typeEl.value, note: noteEl.value.trim(), date: new Date().toLocaleDateString('fr-FR') });
+  saveDecouvrir();
+  titleEl.value = '';
+  noteEl.value = '';
+  renderDecouvrir();
+}
+
+function removeDecouvrir(idx) {
+  decouvrir.splice(idx, 1);
+  saveDecouvrir();
+  renderDecouvrir();
+}
+
+function renderDecouvrir() {
+  const content = document.getElementById('content');
+  const typeIcons = { film: '🎬', serie: '📺', anime: '🎌' };
+  const typeLabels = { film: 'Film', serie: 'Série', anime: 'Animé' };
+
+  let itemsHTML = '';
+  if (decouvrir.length === 0) {
+    itemsHTML = `<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Ta liste est vide — ajoute ce qui t'intrigue !</div></div>`;
+  } else {
+    decouvrir.forEach((item, i) => {
+      itemsHTML += `<div class="dec-item">
+        <div class="dec-type-badge">${typeIcons[item.type]} ${typeLabels[item.type]}</div>
+        <div class="dec-info">
+          <div class="dec-title-text">${item.title}</div>
+          ${item.note ? `<div class="dec-note-text">${item.note}</div>` : ''}
+          <div class="dec-date">Ajouté le ${item.date}</div>
+        </div>
+        <button class="dec-remove" onclick="removeDecouvrir(${i})">✕</button>
+      </div>`;
+    });
+  }
+
+  content.innerHTML = `
+    <div class="dec-form">
+      <div class="dec-form-title">➕ Ajouter à ma liste</div>
+      <input id="dec-title" type="text" placeholder="Titre du film / série / animé..." 
+        style="width:100%;background:#13131f;border:1px solid #1c1c2e;border-radius:8px;padding:9px 13px;color:#ddd6c8;font-size:13px;font-family:inherit;outline:none;margin-bottom:10px;"
+        onkeydown="if(event.key==='Enter') addDecouvrir()"/>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <select id="dec-type" style="flex:1;background:#13131f;border:1px solid #1c1c2e;border-radius:8px;padding:9px 13px;color:#ddd6c8;font-size:13px;font-family:inherit;outline:none;">
+          <option value="film">🎬 Film</option>
+          <option value="serie">📺 Série</option>
+          <option value="anime">🎌 Animé</option>
+        </select>
+      </div>
+      <input id="dec-note" type="text" placeholder="Note / pourquoi ça t'intéresse... (optionnel)"
+        style="width:100%;background:#13131f;border:1px solid #1c1c2e;border-radius:8px;padding:9px 13px;color:#ddd6c8;font-size:13px;font-family:inherit;outline:none;margin-bottom:10px;"
+        onkeydown="if(event.key==='Enter') addDecouvrir()"/>
+      <button onclick="addDecouvrir()" style="width:100%;padding:10px;background:#E8C547;color:#0b0b14;border:none;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">Ajouter</button>
+    </div>
+    <div style="margin-top:20px;">
+      <div style="font-size:11px;letter-spacing:3px;color:#555;text-transform:uppercase;margin-bottom:12px;">${decouvrir.length} titre${decouvrir.length > 1 ? 's' : ''} en attente de jugement</div>
+      ${itemsHTML}
+    </div>`;
+}
+
+function getAllTitles(type) {
+  const section = DATA[type];
+  const result = [];
+  Object.values(section).forEach(sagas =>
+    sagas.forEach(s => s.items.forEach(item => {
+      if (!item.label.includes('à venir')) result.push({ label: item.label, search: item.search, saga: s.saga });
+    }))
+  );
+  return result;
+}
+
+function getAllAnimeTitles() {
+  const result = [];
+  Object.values(ANIME_DATA).forEach(animes =>
+    animes.forEach(a => result.push({ label: a.titre, search: a.search, saga: a.titre }))
+  );
+  return result;
+}
+
+function openModal(slotIndex, type) {
+  modalSlotIndex = slotIndex;
+  modalSlotType = type;
+  document.getElementById('modal-search').value = '';
+  filterModal();
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function filterModal() {
+  const q = document.getElementById('modal-search').value.toLowerCase();
+  const isAnime = modalSlotType === 'anime';
+  const titles = isAnime ? getAllAnimeTitles() : getAllTitles(modalSlotType === 'films' ? 'films' : 'series');
+  const list = document.getElementById('modal-list');
+  const current = isAnime ? topAnime : (modalSlotType === 'films' ? topFilms : topSeries);
+  const usedLabels = current.filter(Boolean).map(t => t.label);
+
+  const filtered = titles.filter(t => !usedLabels.includes(t.label) && (!q || t.label.toLowerCase().includes(q) || t.saga.toLowerCase().includes(q)));
+
+  list.innerHTML = filtered.slice(0, 50).map(t => {
+    const cached = posterCache[t.search];
+    const icon = isAnime ? '🎌' : (modalSlotType === 'films' ? '🎬' : '📺');
+    const posterHTML = cached
+      ? `<div class="modal-item-poster"><img src="${cached}" /></div>`
+      : `<div class="modal-item-poster" data-msearch="${t.search.replace(/"/g,'&quot;')}">${icon}</div>`;
+    return `<div class="modal-item" data-mlabel="${t.label.replace(/"/g,'&quot;')}" data-msearchval="${t.search.replace(/"/g,'&quot;')}" onclick="selectTitle(this.dataset.mlabel, this.dataset.msearchval)">
+      ${posterHTML}
+      <span class="modal-item-label">${t.label}</span>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('[data-msearch]').forEach(async el => {
+    const s = el.getAttribute('data-msearch');
+    el.removeAttribute('data-msearch');
+    const isSeries = modalSlotType === 'series';
+    const url = await fetchPoster(s, isSeries);
+    if (url) el.innerHTML = `<img src="${url}" />`;
+  });
+}
+
+function selectTitle(label, search) {
+  const arr = modalSlotType === 'anime' ? topAnime : (modalSlotType === 'films' ? topFilms : topSeries);
+  arr[modalSlotIndex] = { label, search };
+  saveTop();
+  closeModal();
+  renderClassement();
+}
+
+function removeFromTop(type, idx) {
+  const arr = type === 'anime' ? topAnime : (type === 'films' ? topFilms : topSeries);
+  arr[idx] = null;
+  saveTop();
+  renderClassement();
+}
+
+function renderClassement() {
+  const content = document.getElementById('content');
+  const MEDALS = ['🥇','🥈','🥉'];
+
+  const renderSection = (title, arr, type) => {
+    const icon = type === 'anime' ? '🎌' : (type === 'films' ? '🎬' : '📺');
+    const emptyLabel = type === 'films' ? 'Appuie pour choisir un film' : type === 'series' ? 'Appuie pour choisir une série' : 'Appuie pour choisir un animé';
+    let html = `<div class="top-section">
+      <div class="top-section-title">${title}</div>`;
+
+    arr.forEach((item, i) => {
+      const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+      const rankLabel = i < 3 ? MEDALS[i] : `#${i+1}`;
+
+      if (item) {
+        const cached = posterCache[item.search];
+        const posterHTML = cached
+          ? `<div class="top-poster"><img src="${cached}" onerror="this.parentElement.innerHTML='${icon}'" /></div>`
+          : `<div class="top-poster" data-tsearch="${item.search.replace(/"/g,'&quot;')}" data-ttype="${type}">${icon}</div>`;
+
+        html += `<div class="top-slot filled">
+          <span class="top-rank ${rankClass}">${rankLabel}</span>
+          ${posterHTML}
+          <div class="top-info"><div class="top-title">${item.label}</div></div>
+          <button class="top-remove" onclick="removeFromTop('${type}',${i})">✕</button>
+        </div>`;
+      } else {
+        html += `<div class="top-slot" onclick="openModal(${i},'${type}')" style="cursor:pointer;border-style:dashed;">
+          <span class="top-rank ${rankClass}">${rankLabel}</span>
+          <div class="top-poster" style="border-style:dashed;color:#333;">+</div>
+          <div class="top-info"><span class="top-empty-label">${emptyLabel}</span></div>
+        </div>`;
+      }
+    });
+
+    html += `</div>`;
+    return html;
+  };
+
+  let html = renderSection('🎬 Top 10 Films', topFilms, 'films')
+           + renderSection('📺 Top 10 Séries', topSeries, 'series')
+           + renderSection('🎌 Top 10 Animés', topAnime, 'anime');
+  content.innerHTML = html;
+
+  content.querySelectorAll('[data-tsearch]').forEach(async el => {
+    const s = el.getAttribute('data-tsearch');
+    const t = el.getAttribute('data-ttype');
+    el.removeAttribute('data-tsearch');
+    el.removeAttribute('data-ttype');
+    const url = await fetchPoster(s, t === 'series');
+    if (url) el.innerHTML = `<img src="${url}" onerror="this.parentElement.innerHTML='🎬'" />`;
+  });
+}
+
+function save() {
+  try { localStorage.setItem('cinematheque_v3', JSON.stringify(checked)); } catch(e) {}
+}
+
+function toggleItem(key) {
+  checked[key] = !checked[key];
+  save();
+  const isSeen = checked[key];
+
+  // Format chips (séries)
+  const chip = document.querySelector(`.sl-chip[data-skey="${key.replace(/"/g,'&quot;')}"]`);
+  if (chip) {
+    chip.classList.toggle('checked', isSeen);
+    // Refresh genre bar via chip
+    const block = chip.closest('.genre-block');
+    if (block) {
+      const chips = [...block.querySelectorAll('.sl-chip[data-skey]')];
+      const done = chips.filter(c => checked[c.dataset.skey]).length;
+      const total = chips.length;
+      const pct = total > 0 ? (done/total)*100 : 0;
+      const color = done === total && total > 0 ? '#4ade80' : '#E8C547';
+      const gc = block.querySelector('.genre-count');
+      if (gc) { gc.textContent = `${done}/${total}`; gc.style.color = color; }
+      const bar = block.querySelector('.genre-bar');
+      if (bar) { bar.style.width = pct + '%'; bar.style.background = color; }
+    }
+    updateGlobalCounter();
+    return;
+  }
+
+  // Format classique (films)
+  const row = document.querySelector(`.episode-row[data-key="${key.replace(/"/g,'&quot;')}"]`);
+  if (!row) return;
+  row.classList.toggle('seen', isSeen);
+  row.querySelector('.checkbox').classList.toggle('checked', isSeen);
+  row.querySelector('.ep-label').classList.toggle('seen', isSeen);
+  refreshSagaCount(row);
+  refreshGenreBar(row);
+  updateGlobalCounter();
+}
+
+function refreshSagaCount(row) {
+  const block = row.closest('.saga-block');
+  if (!block) return;
+  const rows = block.querySelectorAll('.episode-row:not(.soon)');
+  const done = [...rows].filter(r => r.classList.contains('seen')).length;
+  block.querySelector('.saga-count').textContent = `${done}/${rows.length}`;
+}
+
+function refreshGenreBar(row) {
+  const block = row.closest('.genre-block');
+  if (!block) return;
+  const rows = block.querySelectorAll('.episode-row:not(.soon)');
+  const done = [...rows].filter(r => r.classList.contains('seen')).length;
+  const total = rows.length;
+  const pct = total > 0 ? (done/total)*100 : 0;
+  const color = done === total ? '#4ade80' : '#E8C547';
+  const gc = block.querySelector('.genre-count');
+  gc.textContent = `${done}/${total}`;
+  gc.style.color = color;
+  const bar = block.querySelector('.genre-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = color;
+}
+
+function updateGlobalCounter() {
+  let total = 0, done = 0;
+  Object.entries(DATA).forEach(([tab, section]) =>
+    Object.values(section).forEach(sagas =>
+      sagas.forEach(s => s.items.forEach((item, i) => {
+        if (item.label.includes('à venir')) return;
+        total++;
+        if (checked[`${tab}||${s.saga}||${i}`]) done++;
+      }))
+    )
+  );
+  // Ajouter les animés (1 point par saison, ou 1 point pour les films)
+  Object.values(ANIME_DATA).forEach(animes =>
+    animes.forEach(a => {
+      if (a.film) {
+        total++;
+        if (animeChecked[`anime||${a.titre}||Film`]) done++;
+      } else {
+        for (let s = 1; s <= a.saisons; s++) {
+          total++;
+          if (animeChecked[`anime||${a.titre}||S${s}`]) done++;
+        }
+      }
+    })
+  );
+  document.getElementById('done-count').textContent = done;
+  document.getElementById('total-count').textContent = total;
+  document.getElementById('global-bar').style.width = total > 0 ? `${(done/total)*100}%` : '0%';
+}
+
+function switchTab(tab, btn) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('search').value = '';
+  document.getElementById('search').style.display = (tab === 'classement' || tab === 'decouvrir') ? 'none' : 'block';
+  showViewToggle(tab === 'films' || tab === 'series' || tab === 'anime');
+  if (tab === 'classement') renderClassement();
+  else if (tab === 'anime') renderAnime();
+  else if (tab === 'decouvrir') renderDecouvrir();
+  else render();
+}
+
+function filterContent() {
+  if (activeTab === 'anime') renderAnime();
+  else render();
+}
+
+async function loadVisiblePosters() {
+  const isSeries = activeTab === 'series';
+  const pending = document.querySelectorAll('[data-search]');
+  for (const el of pending) {
+    const s = el.getAttribute('data-search');
+    el.removeAttribute('data-search');
+    const url = await fetchPoster(s, isSeries);
+    if (url) {
+      el.innerHTML = `<img src="${url}" alt="" onerror="this.parentElement.innerHTML='🎬'" />`;
+    } else {
+      el.innerHTML = '🎬';
+    }
+    el.classList.remove('loading');
+    await new Promise(r => setTimeout(r, 80));
+  }
+}
+
+// ── RENDU CARTE ANIMÉS ──
+function renderCarteAnime(search) {
+  const content = document.getElementById('content');
+  const statusLabel = { termine:'Terminé','en-cours':'En cours','en-attente':'En attente',inacheve:'Inachevé' };
+  const statusClass = { termine:'csb-termine','en-cours':'csb-en-cours','en-attente':'csb-en-attente',inacheve:'csb-inacheve' };
+  let html = '', anyVisible = false;
+
+  Object.entries(ANIME_DATA).forEach(([genre, animes]) => {
+    const filtered = search ? animes.filter(a => a.titre.toLowerCase().includes(search)) : animes;
+    if (!filtered.length) return;
+    anyVisible = true;
+
+    let gDone = 0, gTotal = 0;
+    filtered.forEach(a => {
+      const saisonsDispo = a.episodesSortis !== undefined ? a.episodesSortis : (a.film ? 1 : a.saisons);
+      if (a.film) { if (saisonsDispo > 0) { gTotal++; if (animeChecked[`anime||${a.titre}||Film`]) gDone++; } }
+      else { for (let s = 1; s <= saisonsDispo; s++) { gTotal++; if (animeChecked[`anime||${a.titre}||S${s}`]) gDone++; } }
+    });
+    const gPct = gTotal > 0 ? (gDone/gTotal)*100 : 0;
+    const gColor = gDone === gTotal && gTotal > 0 ? '#4ade80' : '#E8C547';
+
+    html += `<div class="genre-block"><div class="genre-header">
+      <span class="genre-name">${genre}</span>
+      <span class="genre-count" style="color:${gColor}">${gDone}/${gTotal}</span>
+      <div class="genre-bar-bg"><div class="genre-bar" style="width:${gPct}%;background:${gColor}"></div></div>
+    </div><div class="cards-grid-wrap">`;
+
+    filtered.forEach(anime => {
+      const saisonsDispo = anime.episodesSortis !== undefined ? anime.episodesSortis : (anime.film ? 1 : anime.saisons);
+      const cachedUrl = posterCache[anime.search];
+      let posterHTML;
+      if (cachedUrl !== undefined) {
+        posterHTML = cachedUrl
+          ? `<img src="${cachedUrl}" alt="" onerror="this.parentElement.innerHTML='<div class=\\'c-poster-icon\\'>🎌</div>'" style="width:100%;height:100%;object-fit:cover;display:block;"/>`
+          : `<div class="c-poster-icon">🎌</div>`;
+      } else {
+        posterHTML = `<div class="c-poster-icon">🎌</div>`;
+      }
+
+      const sbClass = statusClass[anime.statut] || 'csb-en-attente';
+      const sbLabel = statusLabel[anime.statut] || anime.statut;
+
+      let chipsHTML = '';
+      if (anime.film) {
+        if (saisonsDispo > 0) {
+          const key = `anime||${anime.titre}||Film`;
+          const done = !!animeChecked[key];
+          const ka = key.replace(/"/g,'&quot;');
+          chipsHTML = `<div class="c-chip film-chip${done?' done':''}" data-akey="${ka}" onclick="toggleAnimeSaison(this.dataset.akey)">Film</div>`;
+        }
+      } else {
+        for (let s = 1; s <= (anime.saisons||1); s++) {
+          if (s <= saisonsDispo) {
+            const key = `anime||${anime.titre}||S${s}`;
+            const done = !!animeChecked[key];
+            const ka = key.replace(/"/g,'&quot;');
+            chipsHTML += `<div class="c-chip${done?' done':''}" data-akey="${ka}" onclick="toggleAnimeSaison(this.dataset.akey)">S${s}</div>`;
+          } else {
+            chipsHTML += `<div class="c-chip locked">S${s}</div>`;
+          }
+        }
+      }
+
+      html += `<div class="c-card">
+        <div class="c-poster" data-anime-search="${anime.search?.replace(/"/g,'&quot;')}">
+          ${posterHTML}
+          <div class="c-status-badge ${sbClass}">${sbLabel}</div>
+        </div>
+        <div class="c-body">
+          <div class="c-title">${anime.titre}</div>
+          <div class="c-chips">${chipsHTML}</div>
+        </div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  if (!anyVisible) {
+    html = `<div class="empty"><div class="empty-icon">🎌</div><div class="empty-text">Aucun résultat</div></div>`;
+  }
+
+  content.innerHTML = html;
+  loadVisiblePostersCartesAnime();
+}
+
+function render() {
+  const search = document.getElementById('search').value.toLowerCase().trim();
+  const section = DATA[activeTab];
+  const content = document.getElementById('content');
+  updateGlobalCounter();
+
+  // ── MODE CARTE ──
+  if (currentView === 'carte') {
+    renderCarteFilmsSeries(section, search);
+    return;
+  }
+
+  let html = '';
+  let anyVisible = false;
+  const isSeries = activeTab === 'series';
+
+  Object.entries(section).forEach(([genre, sagas]) => {
+    let filteredSagas = sagas;
+    if (search) {
+      filteredSagas = sagas.map(s => ({
+        ...s,
+        items: s.items.filter(it => it.label.toLowerCase().includes(search) || s.saga.toLowerCase().includes(search))
+      })).filter(s => s.items.length > 0);
+    }
+    if (!filteredSagas.length) return;
+    anyVisible = true;
+
+    const origMap = Object.fromEntries(sagas.map(s => [s.saga, s]));
+    const gTotal = filteredSagas.reduce((a, s) => a + s.items.filter(it => !it.label.includes('à venir')).length, 0);
+    const gDone = filteredSagas.reduce((a, s) => {
+      const orig = origMap[s.saga];
+      return a + s.items.filter(it => {
+        if (it.label.includes('à venir')) return false;
+        const idx = orig.items.findIndex(o => o.label === it.label);
+        return checked[`${activeTab}||${s.saga}||${idx}`];
+      }).length;
+    }, 0);
+    const gPct = gTotal > 0 ? (gDone/gTotal)*100 : 0;
+    const gColor = gDone === gTotal ? '#4ade80' : '#E8C547';
+
+    html += `<div class="genre-block">
+      <div class="genre-header">
+        <span class="genre-name">${genre}</span>
+        <span class="genre-count" style="color:${gColor}">${gDone}/${gTotal}</span>
+        <div class="genre-bar-bg"><div class="genre-bar" style="width:${gPct}%;background:${gColor}"></div></div>
+      </div>`;
+
+    if (isSeries) {
+      html += `<div class="saga-block">`;
+      filteredSagas.forEach(({ saga, items }) => {
+        const orig = origMap[saga];
+        const cached = posterCache[items[0]?.search];
+        let posterHTML;
+        if (cached !== undefined) {
+          posterHTML = cached
+            ? `<div class="sl-poster"><img src="${cached}" alt="" onerror="this.parentElement.innerHTML='📺'"/></div>`
+            : `<div class="sl-poster">📺</div>`;
+        } else {
+          posterHTML = `<div class="sl-poster loading" data-search="${(items[0]?.search||'').replace(/"/g,'&quot;')}"></div>`;
+        }
+
+        let chipsHTML = '';
+        items.forEach((item) => {
+          const idx = orig.items.findIndex(o => o.label === item.label);
+          const key = `${activeTab}||${saga}||${idx}`;
+          const isSeen = !!checked[key];
+          const isSoon = item.label.includes('à venir');
+          const displayLabel = item.label.replace(/ \(à venir\)/,'').replace(saga + ' ','').replace(saga,'').trim() || item.label;
+          const keyAttr = key.replace(/"/g,'&quot;');
+          if (isSoon) {
+            chipsHTML += `<div class="sl-chip" style="opacity:0.4;cursor:default">
+              <span class="sl-chip-label">${displayLabel}</span>
+              <div class="sl-chip-box"></div>
+            </div>`;
+          } else {
+            chipsHTML += `<div class="sl-chip${isSeen?' checked':''}" data-skey="${keyAttr}" onclick="toggleItem(this.dataset.skey)">
+              <span class="sl-chip-label">${displayLabel}</span>
+              <div class="sl-chip-box"><span class="sl-chip-check">✓</span></div>
+            </div>`;
+          }
+        });
+
+        html += `<div class="season-row">
+          ${posterHTML}
+          <span class="sl-title">${saga}</span>
+          <div class="sl-seasons">${chipsHTML}</div>
+        </div>`;
+      });
+      html += `</div>`;
+
+    } else {
+      filteredSagas.forEach(({ saga, items }) => {
+        const orig = origMap[saga];
+        const sDone = items.filter(it => {
+          if (it.label.includes('à venir')) return false;
+          const idx = orig.items.findIndex(o => o.label === it.label);
+          return checked[`${activeTab}||${saga}||${idx}`];
+        }).length;
+        const sTotal = items.filter(it => !it.label.includes('à venir')).length;
+
+        html += `<div class="saga-block">
+          <div class="saga-header">
+            <span class="saga-name">${saga}</span>
+            <span class="saga-count">${sDone}/${sTotal}</span>
+          </div>`;
+
+        items.forEach((item) => {
+          const idx = orig.items.findIndex(o => o.label === item.label);
+          const key = `${activeTab}||${saga}||${idx}`;
+          const isSeen = !!checked[key];
+          const isSoon = item.label.includes('à venir');
+          const displayLabel = item.label.replace(' (à venir)', '');
+          const cachedUrl = posterCache[item.search];
+          let posterHTML;
+          if (cachedUrl !== undefined) {
+            posterHTML = cachedUrl
+              ? `<div class="poster-wrap"><img src="${cachedUrl}" alt="" onerror="this.parentElement.innerHTML='🎬'" /></div>`
+              : `<div class="poster-wrap">🎬</div>`;
+          } else {
+            posterHTML = `<div class="poster-wrap loading" data-search="${item.search.replace(/"/g,'&quot;')}"></div>`;
+          }
+          const keyAttr = key.replace(/"/g,'&quot;');
+          html += `<div class="episode-row${isSeen?' seen':''}${isSoon?' soon':''}" data-key="${keyAttr}" ${!isSoon?`onclick="toggleItem(this.dataset.key)"`:''}>
+            ${posterHTML}
+            <div class="checkbox${isSeen?' checked':''}${isSoon?' disabled':''}"><span class="checkmark">✓</span></div>
+            <span class="ep-label${isSeen?' seen':''}${isSoon?' soon':''}">${displayLabel}</span>
+            ${isSoon?'<span class="soon-badge">BIENTÔT</span>':''}
+          </div>`;
+        });
+        html += `</div>`;
+      });
+    }
+
+    html += `</div>`;
+  });
+
+  if (!anyVisible) {
+    const q = document.getElementById('search').value;
+    html = `<div class="empty"><div class="empty-icon">🎬</div><div class="empty-text">Aucun résultat pour «<span> ${q} </span>»</div></div>`;
+  }
+
+  content.innerHTML = html;
+  loadVisiblePosters();
+}
+
+// ── RENDU CARTE (Films & Séries) ──
+function renderCarteFilmsSeries(section, search) {
+  const content = document.getElementById('content');
+  const isSeries = activeTab === 'series';
+  let html = '';
+  let anyVisible = false;
+
+  Object.entries(section).forEach(([genre, sagas]) => {
+    let filteredSagas = sagas;
+    if (search) {
+      filteredSagas = sagas.map(s => ({
+        ...s,
+        items: s.items.filter(it => it.label.toLowerCase().includes(search) || s.saga.toLowerCase().includes(search))
+      })).filter(s => s.items.length > 0);
+    }
+    if (!filteredSagas.length) return;
+    anyVisible = true;
+
+    const origMap = Object.fromEntries(sagas.map(s => [s.saga, s]));
+    const gTotal = filteredSagas.reduce((a, s) => a + s.items.filter(it => !it.label.includes('à venir')).length, 0);
+    const gDone = filteredSagas.reduce((a, s) => {
+      const orig = origMap[s.saga];
+      return a + s.items.filter(it => {
+        if (it.label.includes('à venir')) return false;
+        const idx = orig.items.findIndex(o => o.label === it.label);
+        return checked[`${activeTab}||${s.saga}||${idx}`];
+      }).length;
+    }, 0);
+    const gPct = gTotal > 0 ? (gDone/gTotal)*100 : 0;
+    const gColor = gDone === gTotal ? '#4ade80' : '#E8C547';
+
+    html += `<div class="genre-block">
+      <div class="genre-header">
+        <span class="genre-name">${genre}</span>
+        <span class="genre-count" style="color:${gColor}">${gDone}/${gTotal}</span>
+        <div class="genre-bar-bg"><div class="genre-bar" style="width:${gPct}%;background:${gColor}"></div></div>
+      </div>
+      <div class="cards-grid-wrap">`;
+
+    filteredSagas.forEach(({ saga, items }) => {
+      const orig = origMap[saga];
+      const searchKey = isSeries ? items[0]?.search : items[0]?.search;
+      const cachedUrl = posterCache[searchKey];
+      let posterHTML;
+      const icon = isSeries ? '📺' : '🎬';
+      if (cachedUrl !== undefined) {
+        posterHTML = cachedUrl
+          ? `<img src="${cachedUrl}" alt="" onerror="this.parentElement.innerHTML='<div class=\\'c-poster-icon\\'>${icon}</div>'" style="width:100%;height:100%;object-fit:cover;display:block;"/>`
+          : `<div class="c-poster-icon">${icon}</div>`;
+      } else {
+        posterHTML = `<div class="c-poster-icon" data-search="${searchKey?.replace(/"/g,'&quot;')}">${icon}</div>`;
+      }
+
+      let chipsHTML = '';
+      items.forEach((item) => {
+        const idx = orig.items.findIndex(o => o.label === item.label);
+        const key = `${activeTab}||${saga}||${idx}`;
+        const isSeen = !!checked[key];
+        const isSoon = item.label.includes('à venir');
+        const rawLabel = item.label.replace(/ \(à venir\)/,'');
+        const shortLabel = rawLabel.replace(saga + ' ','').replace(saga,'').trim() || rawLabel;
+        const displayLabel = shortLabel.length > 0 ? shortLabel : rawLabel;
+        const keyAttr = key.replace(/"/g,'&quot;');
+        if (isSoon) {
+          chipsHTML += `<div class="c-chip locked">${displayLabel}</div>`;
+        } else {
+          chipsHTML += `<div class="c-chip${isSeen?' done':''}" data-key="${keyAttr}" onclick="toggleItem(this.dataset.key)">${displayLabel}</div>`;
+        }
+      });
+
+      html += `<div class="c-card">
+        <div class="c-poster" data-search-poster="${searchKey?.replace(/"/g,'&quot;')}" data-tab="${activeTab}">
+          ${posterHTML}
+        </div>
+        <div class="c-body">
+          <div class="c-title">${saga}</div>
+          <div class="c-chips">${chipsHTML}</div>
+        </div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  if (!anyVisible) {
+    const q = document.getElementById('search').value;
+    html = `<div class="empty"><div class="empty-icon">🎬</div><div class="empty-text">Aucun résultat pour «<span> ${q} </span>»</div></div>`;
+  }
+
+  content.innerHTML = html;
+  loadVisiblePostersCartes();
+}
+
+function loadVisiblePostersCartes() {
+  const isSeries = activeTab === 'series';
+  const icon = isSeries ? '📺' : '🎬';
+  document.querySelectorAll('.c-poster[data-search-poster]').forEach(el => {
+    const search = el.dataset.searchPoster;
+    if (!search) return;
+    function injectImg(url) {
+      if (url) {
+        const img = document.createElement('img');
+        img.src = url; img.alt = '';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+        img.onerror = () => { el.querySelector('img')?.remove(); if (!el.querySelector('.c-status-badge')) el.innerHTML = `<div class="c-poster-icon">${icon}</div>`; };
+        const iconEl = el.querySelector('.c-poster-icon');
+        if (iconEl) iconEl.replaceWith(img); else if (!el.querySelector('img')) el.prepend(img);
+      }
+    }
+    if (posterCache[search] !== undefined) {
+      injectImg(posterCache[search]);
+    } else {
+      fetchPoster(search, isSeries).then(url => {
+        posterCache[search] = url || '';
+        injectImg(url);
+      });
+    }
+  });
+}
+
+function loadVisiblePostersCartesAnime() {
+  document.querySelectorAll('.c-poster[data-anime-search]').forEach(el => {
+    const search = el.dataset.animeSearch;
+    if (!search) return;
+    function injectImg(url) {
+      if (url) {
+        const img = document.createElement('img');
+        img.src = url; img.alt = '';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+        img.onerror = () => {};
+        const iconEl = el.querySelector('.c-poster-icon');
+        if (iconEl) iconEl.replaceWith(img); else if (!el.querySelector('img')) el.prepend(img);
+      }
+    }
+    if (posterCache[search] !== undefined) {
+      injectImg(posterCache[search]);
+    } else {
+      fetchPoster(search, true).then(url => {
+        posterCache[search] = url || '';
+        injectImg(url);
+      });
+    }
+  });
+}
+
+// Initialisation
+showViewToggle(true);
+document.getElementById('btn-liste').classList.toggle('active', currentView === 'liste');
+document.getElementById('btn-carte').classList.toggle('active', currentView === 'carte');
+render();
+</script>
+</body>
+</html>
