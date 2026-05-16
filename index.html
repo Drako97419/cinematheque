@@ -15,7 +15,7 @@
     padding: 20px 18px 14px;
     backdrop-filter: blur(10px);
   }
-  .header-inner { max-width: 720px; margin: 0 auto; }
+  .header-inner { max-width: 1400px; margin: 0 auto; }
   .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
   .header-center { text-align: center; flex: 1; }
   .header-label { font-size: 13px; letter-spacing: 5px; color: #E8C547; font-family: monospace; text-transform: uppercase; margin-bottom: 3px; }
@@ -56,7 +56,7 @@
   .dec-remove:hover { color:#f87171; }
   .sl-chip-upcoming { cursor: default !important; opacity: 0.4; }
 
-  #content { max-width: 720px; margin: 0 auto; padding: 16px 16px 60px; }
+  #content { max-width: 1400px; margin: 0 auto; padding: 16px 24px 60px; }
 
   .genre-block { margin-bottom: 28px; }
   .genre-header {
@@ -244,7 +244,7 @@
   .view-btn:hover:not(.active) { color:#aaa; }
 
   /* ── MODE CARTE ── */
-  .cards-grid-wrap { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
+  .cards-grid-wrap { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; }
   .c-card { background:#13131f; border:1px solid #1c1c2e; border-radius:10px; overflow:hidden; transition:transform 0.15s,border-color 0.15s; }
   .c-card:hover { transform:translateY(-2px); border-color:#2a2a3e; }
   .c-poster { width:100%; aspect-ratio:2/3; background:#0f0f1c; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
@@ -311,7 +311,7 @@
 
 <script>
 const TMDB_KEY = '365dba2026fde0bf9327e68e1a1bc0f3';
-const TMDB_IMG = 'https://image.tmdb.org/t/p/w342';
+const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
 
 let posterCache = {};
 try { posterCache = JSON.parse(localStorage.getItem('cinePosterCache') || '{}'); } catch(e) {}
