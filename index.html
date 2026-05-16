@@ -311,7 +311,7 @@
 
 <script>
 const TMDB_KEY = '365dba2026fde0bf9327e68e1a1bc0f3';
-const TMDB_IMG = 'https://image.tmdb.org/t/p/w92';
+const TMDB_IMG = 'https://image.tmdb.org/t/p/w342';
 
 let posterCache = {};
 try { posterCache = JSON.parse(localStorage.getItem('cinePosterCache') || '{}'); } catch(e) {}
@@ -363,18 +363,18 @@ const DATA = {
       ]},
       { saga: "La Chute du Président", items: [{label:"La Chute du Président", search:"White House Down 2013"}]},
       { saga: "Fast & Furious", items: [
-        {label:"Fast & Furious 1", search:"The Fast and the Furious"},
-        {label:"2 Fast 2 Furious", search:"2 Fast 2 Furious"},
-        {label:"Tokyo Drift", search:"The Fast and the Furious Tokyo Drift"},
-        {label:"Fast & Furious 4", search:"Fast Furious 2009"},
-        {label:"Fast Five", search:"Fast Five"},
-        {label:"Fast & Furious 6", search:"Fast Furious 6"},
-        {label:"Furious 7", search:"Furious 7"},
-        {label:"Fast 8", search:"The Fate of the Furious"},
-        {label:"Hobbs & Shaw (spin-off)", search:"Fast Furious Hobbs and Shaw"},
-        {label:"Fast 9", search:"F9 Fast Furious"},
-        {label:"Fast X", search:"Fast X"},
-        {label:"Fast & Furious 11", search:"Fast Furious 11"}
+        {label:"Fast & Furious 1", search:"Fast X 2023 Vin Diesel"},
+        {label:"2 Fast 2 Furious", search:"2 Fast 2 Furious 2003"},
+        {label:"Tokyo Drift", search:"The Fast and the Furious Tokyo Drift 2006"},
+        {label:"Fast & Furious 4", search:"Fast Furious 2009 Vin Diesel"},
+        {label:"Fast Five", search:"Fast Five 2011 Vin Diesel"},
+        {label:"Fast & Furious 6", search:"Fast Furious 6 2013"},
+        {label:"Furious 7", search:"Furious 7 2015 Vin Diesel"},
+        {label:"Fast 8", search:"The Fate of the Furious 2017"},
+        {label:"Hobbs & Shaw (spin-off)", search:"Hobbs and Shaw 2019"},
+        {label:"Fast 9", search:"F9 Fast Saga 2021 Vin Diesel"},
+        {label:"Fast X", search:"Fast X 2023 Vin Diesel"},
+        {label:"Fast & Furious 11", search:"Fast Furious 11 2025"}
       ]},
       { saga: "Pirates des Caraïbes", items: [
         {label:"La Malédiction du Black Pearl", search:"Pirates of the Caribbean The Curse of the Black Pearl"},
@@ -384,10 +384,10 @@ const DATA = {
         {label:"La Vengeance de Salazar", search:"Pirates of the Caribbean Dead Men Tell No Tales"}
       ]},
       { saga: "Bad Boys", items: [
-        {label:"Bad Boys 1", search:"Bad Boys 1995"},
-        {label:"Bad Boys 2", search:"Bad Boys II"},
-        {label:"Bad Boys for Life", search:"Bad Boys for Life"},
-        {label:"Bad Boys: Ride or Die", search:"Bad Boys Ride or Die"}
+        {label:"Bad Boys 1", search:"Bad Boys 1995 Will Smith Martin Lawrence"},
+        {label:"Bad Boys 2", search:"Bad Boys II 2003 Will Smith"},
+        {label:"Bad Boys for Life", search:"Bad Boys for Life 2020"},
+        {label:"Bad Boys: Ride or Die", search:"Bad Boys Ride or Die 2024"}
       ]},
       { saga: "Expendables", items: [
         {label:"Expendables 1", search:"The Expendables"},
@@ -406,7 +406,7 @@ const DATA = {
         {label:"The Next Level", search:"Jumanji The Next Level"}
       ]},
       { saga: "James Bond", items: [
-        {label:"Dr. No", search:"Dr. No James Bond"},
+        {label:"Dr. No", search:"Casino Royale 2006 Daniel Craig James Bond"},
         {label:"GoldenEye", search:"GoldenEye"},
         {label:"Casino Royale", search:"Casino Royale 2006"},
         {label:"Quantum of Solace", search:"Quantum of Solace"},
@@ -415,14 +415,14 @@ const DATA = {
         {label:"Mourir Peut Attendre", search:"No Time to Die"}
       ]},
       { saga: "Gladiateur", items: [
-        {label:"Gladiateur 1", search:"Gladiator 2000"},
-        {label:"Gladiateur 2", search:"Gladiator II"}
+        {label:"Gladiateur 1", search:"Gladiator 2000 Russell Crowe Ridley Scott"},
+        {label:"Gladiateur 2", search:"Gladiator II 2024 Ridley Scott"}
       ]},
       { saga: "My Spy", items: [
-        {label:"My Spy 1", search:"My Spy 2020"},
-        {label:"My Spy 2", search:"My Spy The Eternal City"}
+        {label:"My Spy 1", search:"My Spy 2020 Dave Bautista"},
+        {label:"My Spy 2", search:"My Spy The Eternal City 2024 Bautista"}
       ]},
-      { saga: "Uncharted", items: [{label:"Uncharted", search:"Uncharted 2022"}]},
+      { saga: "Uncharted", items: [{label:"Uncharted", search:"Uncharted 2022 Tom Holland Mark Wahlberg"}]},
       { saga: "Baby Driver", items: [{label:"Baby Driver", search:"Baby Driver"}]},
       { saga: "Focus", items: [{label:"Focus", search:"Focus 2015"}]},
       { saga: "Homefront", items: [{label:"Homefront", search:"Homefront 2013"}]},
@@ -1225,11 +1225,11 @@ const DATA = {
         {label:"Luke Cage S2", search:"Luke Cage série Marvel"}
       ]},
       { saga: "Breaking Bad", items: [
-        {label:"Breaking Bad S1", search:"Breaking Bad série"},
-        {label:"Breaking Bad S2", search:"Breaking Bad série"},
-        {label:"Breaking Bad S3", search:"Breaking Bad série"},
-        {label:"Breaking Bad S4", search:"Breaking Bad série"},
-        {label:"Breaking Bad S5", search:"Breaking Bad série"}
+        {label:"Breaking Bad S1", search:"Breaking Bad AMC Walter White"},
+        {label:"Breaking Bad S2", search:"Breaking Bad AMC Walter White"},
+        {label:"Breaking Bad S3", search:"Breaking Bad AMC Walter White"},
+        {label:"Breaking Bad S4", search:"Breaking Bad AMC Walter White"},
+        {label:"Breaking Bad S5", search:"Breaking Bad AMC Walter White"}
       ]},
       { saga: "Peaky Blinders", items: [
         {label:"Peaky Blinders S1", search:"Peaky Blinders série"},
