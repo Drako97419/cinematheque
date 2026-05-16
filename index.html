@@ -244,7 +244,7 @@
   .view-btn:hover:not(.active) { color:#aaa; }
 
   /* ── MODE CARTE ── */
-  .cards-grid-wrap { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; }
+  .cards-grid-wrap { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:12px; }
   .c-card { background:#13131f; border:1px solid #1c1c2e; border-radius:10px; overflow:hidden; transition:transform 0.15s,border-color 0.15s; }
   .c-card:hover { transform:translateY(-2px); border-color:#2a2a3e; }
   .c-poster { width:100%; aspect-ratio:2/3; background:#0f0f1c; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
@@ -1439,7 +1439,28 @@ function saveAnimeChecked() {
 function toggleAnimeSaison(key) {
   animeChecked[key] = !animeChecked[key];
   saveAnimeChecked();
-  // Retrouver le chip via data-akey plutôt que CSS.escape sur onclick
+
+  // Mode carte animés — update direct sans re-render
+  const cChip = document.querySelector(`.c-chip[data-akey="${key.replace(/"/g,'&quot;')}"]`);
+  if (cChip) {
+    cChip.classList.toggle('done', animeChecked[key]);
+    const block = cChip.closest('.genre-block');
+    if (block) {
+      const allChips = [...block.querySelectorAll('.c-chip[data-akey]')];
+      const done = allChips.filter(c => animeChecked[c.dataset.akey]).length;
+      const total = allChips.length;
+      const pct = total > 0 ? (done/total)*100 : 0;
+      const color = done === total && total > 0 ? '#4ade80' : '#E8C547';
+      const gc = block.querySelector('.genre-count');
+      if (gc) { gc.textContent = `${done}/${total}`; gc.style.color = color; }
+      const bar = block.querySelector('.genre-bar');
+      if (bar) { bar.style.width = pct + '%'; bar.style.background = color; }
+    }
+    updateGlobalCounter();
+    return;
+  }
+
+  // Mode liste animés
   const chip = document.querySelector(`.sl-chip[data-akey="${key.replace(/"/g,'&quot;')}"]`);
   if (chip) chip.classList.toggle('checked', animeChecked[key]);
   const row = chip ? chip.closest('.season-row') : null;
@@ -1840,11 +1861,31 @@ function toggleItem(key) {
   save();
   const isSeen = checked[key];
 
-  // Format chips (séries)
+  // Mode carte films/séries — update direct du chip sans re-render
+  const cChip = document.querySelector(`.c-chip[data-key="${key.replace(/"/g,'&quot;')}"]`);
+  if (cChip) {
+    cChip.classList.toggle('done', isSeen);
+    // Refresh genre bar
+    const block = cChip.closest('.genre-block');
+    if (block) {
+      const allChips = [...block.querySelectorAll('.c-chip[data-key]')];
+      const done = allChips.filter(c => checked[c.dataset.key]).length;
+      const total = allChips.length;
+      const pct = total > 0 ? (done/total)*100 : 0;
+      const color = done === total && total > 0 ? '#4ade80' : '#E8C547';
+      const gc = block.querySelector('.genre-count');
+      if (gc) { gc.textContent = `${done}/${total}`; gc.style.color = color; }
+      const bar = block.querySelector('.genre-bar');
+      if (bar) { bar.style.width = pct + '%'; bar.style.background = color; }
+    }
+    updateGlobalCounter();
+    return;
+  }
+
+  // Format chips (séries vue liste)
   const chip = document.querySelector(`.sl-chip[data-skey="${key.replace(/"/g,'&quot;')}"]`);
   if (chip) {
     chip.classList.toggle('checked', isSeen);
-    // Refresh genre bar via chip
     const block = chip.closest('.genre-block');
     if (block) {
       const chips = [...block.querySelectorAll('.sl-chip[data-skey]')];
@@ -1861,7 +1902,7 @@ function toggleItem(key) {
     return;
   }
 
-  // Format classique (films)
+  // Format classique (films vue liste)
   const row = document.querySelector(`.episode-row[data-key="${key.replace(/"/g,'&quot;')}"]`);
   if (!row) return;
   row.classList.toggle('seen', isSeen);
