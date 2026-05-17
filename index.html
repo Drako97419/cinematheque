@@ -314,7 +314,7 @@ const TMDB_KEY = '365dba2026fde0bf9327e68e1a1bc0f3';
 const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
 
 let posterCache = {};
-try { posterCache = JSON.parse(localStorage.getItem('cinePosterCache_v3') || '{}'); } catch(e) {}
+try { posterCache = JSON.parse(localStorage.getItem('cinePosterCache_v4') || '{}'); } catch(e) {}
 
 // ── FILE D'ATTENTE TMDB (max 5 requêtes simultanées) ──
 let tmdbQueue = [];
@@ -368,7 +368,7 @@ async function fetchPoster(searchTitle, isSeries) {
       }
       const full = path ? TMDB_IMG + path : '';
       posterCache[cacheKey] = full;
-      try { localStorage.setItem('cinePosterCache_v3', JSON.stringify(posterCache)); } catch(e) {}
+      try { localStorage.setItem('cinePosterCache_v4', JSON.stringify(posterCache)); } catch(e) {}
       return full;
     } catch { return ''; }
   });
@@ -2362,56 +2362,59 @@ function renderCarteFilmsSeries(section, search) {
   loadVisiblePostersCartes();
 }
 
-function loadVisiblePostersCartes() {
-  const isSeries = activeTab === 'series';
-  const icon = isSeries ? '📺' : '🎬';
-  document.querySelectorAll('.c-poster[data-search-poster]').forEach(el => {
-    const search = el.dataset.searchPoster;
-    if (!search) return;
-    function injectImg(url) {
-      if (url) {
-        const img = document.createElement('img');
-        img.src = url; img.alt = '';
-        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
-        img.onerror = () => { el.querySelector('img')?.remove(); if (!el.querySelector('.c-status-badge')) el.innerHTML = `<div class="c-poster-icon">${icon}</div>`; };
-        const iconEl = el.querySelector('.c-poster-icon');
-        if (iconEl) iconEl.replaceWith(img); else if (!el.querySelector('img')) el.prepend(img);
+
+// ── INTERSECTION OBSERVER pour chargement lazy ──
+let posterObserver = null;
+
+function setupPosterObserver() {
+  if (posterObserver) posterObserver.disconnect();
+  posterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      posterObserver.unobserve(el);
+      const search = el.dataset.searchPoster || el.dataset.animeSearch;
+      const isSeries = el.dataset.tab === 'series' || el.dataset.animeSearch !== undefined;
+      if (!search) return;
+
+      function injectImg(url) {
+        if (url) {
+          const img = document.createElement('img');
+          img.src = url; img.alt = '';
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+          const iconEl = el.querySelector('.c-poster-icon');
+          if (iconEl) iconEl.replaceWith(img);
+          else if (!el.querySelector('img')) el.prepend(img);
+        }
       }
-    }
-    if (posterCache[search] !== undefined) {
-      injectImg(posterCache[search]);
-    } else {
-      fetchPoster(search, isSeries).then(url => {
-        posterCache[search] = url || '';
-        injectImg(url);
-      });
-    }
+
+      // Si en cache ET non vide → injecter directement
+      if (posterCache[search] && posterCache[search] !== '') {
+        injectImg(posterCache[search]);
+      } else {
+        // Pas en cache ou vide → charger
+        fetchPoster(search, isSeries).then(url => {
+          if (url) {
+            posterCache[search] = url;
+            try { localStorage.setItem('cinePosterCache_v4', JSON.stringify(posterCache)); } catch(e) {}
+            injectImg(url);
+          }
+        });
+      }
+    });
+  }, { rootMargin: '200px' });
+
+  document.querySelectorAll('.c-poster[data-search-poster], .c-poster[data-anime-search]').forEach(el => {
+    posterObserver.observe(el);
   });
 }
 
+function loadVisiblePostersCartes() {
+  setupPosterObserver();
+}
+
 function loadVisiblePostersCartesAnime() {
-  document.querySelectorAll('.c-poster[data-anime-search]').forEach(el => {
-    const search = el.dataset.animeSearch;
-    if (!search) return;
-    function injectImg(url) {
-      if (url) {
-        const img = document.createElement('img');
-        img.src = url; img.alt = '';
-        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
-        img.onerror = () => {};
-        const iconEl = el.querySelector('.c-poster-icon');
-        if (iconEl) iconEl.replaceWith(img); else if (!el.querySelector('img')) el.prepend(img);
-      }
-    }
-    if (posterCache[search] !== undefined) {
-      injectImg(posterCache[search]);
-    } else {
-      fetchPoster(search, true).then(url => {
-        posterCache[search] = url || '';
-        injectImg(url);
-      });
-    }
-  });
+  setupPosterObserver();
 }
 
 // Initialisation
