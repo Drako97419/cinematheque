@@ -367,8 +367,10 @@ async function fetchPoster(searchTitle, isSeries) {
         path = data.results?.find(r => r.poster_path)?.poster_path || null;
       }
       const full = path ? TMDB_IMG + path : '';
-      posterCache[cacheKey] = full;
-      try { localStorage.setItem('cinePosterCache_v4', JSON.stringify(posterCache)); } catch(e) {}
+      if (full) {
+        posterCache[cacheKey] = full;
+        try { localStorage.setItem('cinePosterCache_v4', JSON.stringify(posterCache)); } catch(e) {}
+      }
       return full;
     } catch { return ''; }
   });
@@ -2392,13 +2394,16 @@ function setupPosterObserver() {
       if (posterCache[search] && posterCache[search] !== '') {
         injectImg(posterCache[search]);
       } else {
-        // Pas en cache ou vide → charger
+        // Supprimer l'entrée vide du cache si elle existe
+        delete posterCache[search];
+        // Charger depuis TMDB
         fetchPoster(search, isSeries).then(url => {
           if (url) {
             posterCache[search] = url;
             try { localStorage.setItem('cinePosterCache_v4', JSON.stringify(posterCache)); } catch(e) {}
             injectImg(url);
           }
+          // Ne PAS sauvegarder si url est vide
         });
       }
     });
