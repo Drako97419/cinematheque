@@ -314,7 +314,7 @@ const TMDB_KEY = '365dba2026fde0bf9327e68e1a1bc0f3';
 const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
 
 let posterCache = {};
-try { posterCache = JSON.parse(localStorage.getItem('cinePosterCache') || '{}'); } catch(e) {}
+try { posterCache = JSON.parse(localStorage.getItem('cinePosterCache_v2') || '{}'); } catch(e) {}
 
 async function fetchPoster(searchTitle, isSeries) {
   const cacheKey = searchTitle;
@@ -327,7 +327,7 @@ async function fetchPoster(searchTitle, isSeries) {
     const path = data.results?.[0]?.poster_path || null;
     const full = path ? TMDB_IMG + path : '';
     posterCache[cacheKey] = full;
-    try { localStorage.setItem('cinePosterCache', JSON.stringify(posterCache)); } catch(e) {}
+    try { localStorage.setItem('cinePosterCache_v2', JSON.stringify(posterCache)); } catch(e) {}
     return full;
   } catch { return ''; }
 }
@@ -1097,207 +1097,201 @@ const DATA = {
   series: {
     "🚔 Action / Thriller": [
       { saga: "Jack Ryan", items: [
-        {label:"Jack Ryan S1", search:"Jack Ryan série Amazon Prime"},
-        {label:"Jack Ryan S2", search:"Jack Ryan série Amazon Prime"},
-        {label:"Jack Ryan S3", search:"Jack Ryan série Amazon Prime"},
-        {label:"Jack Ryan S4", search:"Jack Ryan série Amazon Prime"}
-      ]},
-      { saga: "Jack Ryan", items: [
-        {label:"Jack Ryan S1", search:"Jack Ryan Amazon Prime serie"},
-        {label:"Jack Ryan S2", search:"Jack Ryan Amazon Prime serie"},
-        {label:"Jack Ryan S3", search:"Jack Ryan Amazon Prime serie"},
-        {label:"Jack Ryan S4", search:"Jack Ryan Amazon Prime serie"}
+        {label:"Jack Ryan S1", search:"Tom Clancy Jack Ryan Amazon 2018"},
+        {label:"Jack Ryan S2", search:"Tom Clancy Jack Ryan Amazon 2018"},
+        {label:"Jack Ryan S3", search:"Tom Clancy Jack Ryan Amazon 2018"},
+        {label:"Jack Ryan S4", search:"Tom Clancy Jack Ryan Amazon 2018"}
       ]},
       { saga: "Cobra Kai", items: [
-        {label:"Cobra Kai S1", search:"Cobra Kai Netflix série"},
-        {label:"Cobra Kai S2", search:"Cobra Kai Netflix série"},
-        {label:"Cobra Kai S3", search:"Cobra Kai Netflix série"},
-        {label:"Cobra Kai S4", search:"Cobra Kai Netflix série"},
-        {label:"Cobra Kai S5", search:"Cobra Kai Netflix série"},
-        {label:"Cobra Kai S6", search:"Cobra Kai Netflix saison 6"}
+        {label:"Cobra Kai S1", search:"Cobra Kai 2018 Netflix"},
+        {label:"Cobra Kai S2", search:"Cobra Kai 2018 Netflix"},
+        {label:"Cobra Kai S3", search:"Cobra Kai 2018 Netflix"},
+        {label:"Cobra Kai S4", search:"Cobra Kai 2018 Netflix"},
+        {label:"Cobra Kai S5", search:"Cobra Kai 2018 Netflix"},
+        {label:"Cobra Kai S6", search:"Cobra Kai 2018 Netflix"}
       ]},
       { saga: "Reacher", items: [
-        {label:"Reacher S1", search:"Reacher"},
-        {label:"Reacher S2", search:"Reacher saison 2"},
-        {label:"Reacher S3", search:"Reacher saison 3"},
-        {label:"Reacher S4", search:"Reacher saison 4"}
+        {label:"Reacher S1", search:"Reacher 2022 Amazon Prime"},
+        {label:"Reacher S2", search:"Reacher 2022 Amazon Prime"},
+        {label:"Reacher S3", search:"Reacher 2022 Amazon Prime"},
+        {label:"Reacher S4", search:"Reacher 2022 Amazon Prime"}
       ]},
       { saga: "Person of Interest", items: [
-        {label:"Person of Interest S1", search:"Person of Interest"},
-        {label:"Person of Interest S2", search:"Person of Interest"},
-        {label:"Person of Interest S3", search:"Person of Interest"},
-        {label:"Person of Interest S4", search:"Person of Interest"},
-        {label:"Person of Interest S5", search:"Person of Interest"}
+        {label:"Person of Interest S1", search:"Person of Interest CBS 2011"},
+        {label:"Person of Interest S2", search:"Person of Interest CBS 2011"},
+        {label:"Person of Interest S3", search:"Person of Interest CBS 2011"},
+        {label:"Person of Interest S4", search:"Person of Interest CBS 2011"},
+        {label:"Person of Interest S5", search:"Person of Interest CBS 2011"}
       ]},
       { saga: "The Day of the Jackal", items: [
-        {label:"The Day of the Jackal S1", search:"The Day of the Jackal 2024"},
-        {label:"The Day of the Jackal S2", search:"The Day of the Jackal serie"}
+        {label:"The Day of the Jackal S1", search:"The Day of the Jackal 2024 Eddie Redmayne"},
+        {label:"The Day of the Jackal S2", search:"The Day of the Jackal 2024 Eddie Redmayne"}
       ]},
-      { saga: "Wayne", items: [{label:"Wayne S1", search:"Wayne série Amazon"}]},
-      { saga: "Taboo", items: [{label:"Taboo S1", search:"Taboo BBC serie"}]},
-      { saga: "Mobland", items: [{label:"Mobland S1", search:"Mobland serie"}]},
+      { saga: "Wayne", items: [{label:"Wayne S1", search:"Wayne 2019 YouTube Premium"}]},
+      { saga: "Taboo", items: [{label:"Taboo S1", search:"Taboo 2017 Tom Hardy FX"}]},
+      { saga: "Mobland", items: [{label:"Mobland S1", search:"Mobland 2025 Tom Hardy Paramount"}]},
       { saga: "Shooter", items: [
-        {label:"Shooter S1", search:"Shooter série TV 2016"},
-        {label:"Shooter S2", search:"Shooter série TV 2016"},
-        {label:"Shooter S3", search:"Shooter série TV 2016"}
+        {label:"Shooter S1", search:"Shooter 2016 USA Network Ryan Phillippe"},
+        {label:"Shooter S2", search:"Shooter 2016 USA Network Ryan Phillippe"},
+        {label:"Shooter S3", search:"Shooter 2016 USA Network Ryan Phillippe"}
       ]},
       { saga: "Limitless", items: [
-        {label:"Limitless S1", search:"Limitless série CBS 2015"}
+        {label:"Limitless S1", search:"Limitless 2015 CBS Jake McDorman"}
       ]},
       { saga: "Arrow", items: [
-        {label:"Arrow S1", search:"Arrow série TV"},
-        {label:"Arrow S2", search:"Arrow série TV"},
-        {label:"Arrow S3", search:"Arrow série TV"},
-        {label:"Arrow S4", search:"Arrow série TV"},
-        {label:"Arrow S5", search:"Arrow série TV"},
-        {label:"Arrow S6", search:"Arrow série TV"},
-        {label:"Arrow S7", search:"Arrow série TV"},
-        {label:"Arrow S8", search:"Arrow série TV"}
+        {label:"Arrow S1", search:"Arrow 2012 CW Stephen Amell"},
+        {label:"Arrow S2", search:"Arrow 2012 CW Stephen Amell"},
+        {label:"Arrow S3", search:"Arrow 2012 CW Stephen Amell"},
+        {label:"Arrow S4", search:"Arrow 2012 CW Stephen Amell"},
+        {label:"Arrow S5", search:"Arrow 2012 CW Stephen Amell"},
+        {label:"Arrow S6", search:"Arrow 2012 CW Stephen Amell"},
+        {label:"Arrow S7", search:"Arrow 2012 CW Stephen Amell"},
+        {label:"Arrow S8", search:"Arrow 2012 CW Stephen Amell"}
       ]},
       { saga: "The Flash", items: [
-        {label:"The Flash S1", search:"The Flash série TV 2014"},
-        {label:"The Flash S2", search:"The Flash série TV 2014"},
-        {label:"The Flash S3", search:"The Flash série TV 2014"},
-        {label:"The Flash S4", search:"The Flash série TV 2014"},
-        {label:"The Flash S5", search:"The Flash série TV 2014"},
-        {label:"The Flash S6", search:"The Flash série TV 2014"},
-        {label:"The Flash S7", search:"The Flash série TV 2014"},
-        {label:"The Flash S8", search:"The Flash série TV 2014"},
-        {label:"The Flash S9", search:"The Flash série TV 2014"}
+        {label:"The Flash S1", search:"The Flash 2014 CW Grant Gustin"},
+        {label:"The Flash S2", search:"The Flash 2014 CW Grant Gustin"},
+        {label:"The Flash S3", search:"The Flash 2014 CW Grant Gustin"},
+        {label:"The Flash S4", search:"The Flash 2014 CW Grant Gustin"},
+        {label:"The Flash S5", search:"The Flash 2014 CW Grant Gustin"},
+        {label:"The Flash S6", search:"The Flash 2014 CW Grant Gustin"},
+        {label:"The Flash S7", search:"The Flash 2014 CW Grant Gustin"},
+        {label:"The Flash S8", search:"The Flash 2014 CW Grant Gustin"},
+        {label:"The Flash S9", search:"The Flash 2014 CW Grant Gustin"}
       ]},
       { saga: "Prison Break", items: [
-        {label:"Prison Break S1", search:"Prison Break série"},
-        {label:"Prison Break S2", search:"Prison Break série"},
-        {label:"Prison Break S3", search:"Prison Break série"},
-        {label:"Prison Break S4", search:"Prison Break série"},
-        {label:"Prison Break S5", search:"Prison Break série"}
+        {label:"Prison Break S1", search:"Prison Break 2005 Fox Wentworth Miller"},
+        {label:"Prison Break S2", search:"Prison Break 2005 Fox Wentworth Miller"},
+        {label:"Prison Break S3", search:"Prison Break 2005 Fox Wentworth Miller"},
+        {label:"Prison Break S4", search:"Prison Break 2005 Fox Wentworth Miller"},
+        {label:"Prison Break S5", search:"Prison Break 2005 Fox Wentworth Miller"}
       ]},
       { saga: "Iron Fist", items: [
-        {label:"Iron Fist S1", search:"Iron Fist Marvel série"},
-        {label:"Iron Fist S2", search:"Iron Fist Marvel série"}
+        {label:"Iron Fist S1", search:"Iron Fist 2017 Netflix Marvel"},
+        {label:"Iron Fist S2", search:"Iron Fist 2017 Netflix Marvel"}
       ]},
       { saga: "Daredevil", items: [
-        {label:"Daredevil S1", search:"Daredevil Marvel série"},
-        {label:"Daredevil S2", search:"Daredevil Marvel série"},
-        {label:"Daredevil S3", search:"Daredevil Marvel série"},
-        {label:"Daredevil : Born Again S1", search:"Daredevil Born Again"}
+        {label:"Daredevil S1", search:"Daredevil 2015 Netflix Marvel Charlie Cox"},
+        {label:"Daredevil S2", search:"Daredevil 2015 Netflix Marvel Charlie Cox"},
+        {label:"Daredevil S3", search:"Daredevil 2015 Netflix Marvel Charlie Cox"},
+        {label:"Daredevil : Born Again S1", search:"Daredevil Born Again 2025 Marvel Disney+"}
       ]},
       { saga: "The Boys", items: [
-        {label:"The Boys S1", search:"The Boys série Amazon"},
-        {label:"The Boys S2", search:"The Boys série Amazon"},
-        {label:"The Boys S3", search:"The Boys série Amazon"},
-        {label:"The Boys S4", search:"The Boys série Amazon"}
+        {label:"The Boys S1", search:"The Boys 2019 Amazon Prime"},
+        {label:"The Boys S2", search:"The Boys 2019 Amazon Prime"},
+        {label:"The Boys S3", search:"The Boys 2019 Amazon Prime"},
+        {label:"The Boys S4", search:"The Boys 2019 Amazon Prime"}
       ]},
     ],
     "🔪 Crime / Drame": [
       { saga: "Power", items: [
-        {label:"Power S1", search:"Power serie Starz 2014"},
-        {label:"Power S2", search:"Power serie Starz 2014"},
-        {label:"Power S3", search:"Power serie Starz 2014"},
-        {label:"Power S4", search:"Power serie Starz 2014"},
-        {label:"Power S5", search:"Power serie Starz 2014"},
-        {label:"Power S6", search:"Power serie Starz 2014"}
+        {label:"Power S1", search:"Power 2014 Starz Omari Hardwick"},
+        {label:"Power S2", search:"Power 2014 Starz Omari Hardwick"},
+        {label:"Power S3", search:"Power 2014 Starz Omari Hardwick"},
+        {label:"Power S4", search:"Power 2014 Starz Omari Hardwick"},
+        {label:"Power S5", search:"Power 2014 Starz Omari Hardwick"},
+        {label:"Power S6", search:"Power 2014 Starz Omari Hardwick"}
       ]},
       { saga: "Lucifer", items: [
-        {label:"Lucifer S1", search:"Lucifer serie Netflix"},
-        {label:"Lucifer S2", search:"Lucifer serie Netflix"},
-        {label:"Lucifer S3", search:"Lucifer serie Netflix"},
-        {label:"Lucifer S4", search:"Lucifer serie Netflix"},
-        {label:"Lucifer S5", search:"Lucifer serie Netflix"},
-        {label:"Lucifer S6", search:"Lucifer serie Netflix"}
+        {label:"Lucifer S1", search:"Lucifer 2016 Netflix Tom Ellis"},
+        {label:"Lucifer S2", search:"Lucifer 2016 Netflix Tom Ellis"},
+        {label:"Lucifer S3", search:"Lucifer 2016 Netflix Tom Ellis"},
+        {label:"Lucifer S4", search:"Lucifer 2016 Netflix Tom Ellis"},
+        {label:"Lucifer S5", search:"Lucifer 2016 Netflix Tom Ellis"},
+        {label:"Lucifer S6", search:"Lucifer 2016 Netflix Tom Ellis"}
       ]},
       { saga: "Dexter", items: [
-        {label:"Dexter (série originale)", search:"Dexter serie"},
-        {label:"Dexter: New Blood", search:"Dexter New Blood"},
-        {label:"Dexter: Origine du Mal", search:"Dexter Original Sin"},
-        {label:"Dexter: Resurrection", search:"Dexter Resurrection"}
+        {label:"Dexter (série originale)", search:"Dexter 2006 Showtime Michael C Hall"},
+        {label:"Dexter: New Blood", search:"Dexter New Blood 2021 Showtime"},
+        {label:"Dexter: Origine du Mal", search:"Dexter Original Sin 2024"},
+        {label:"Dexter: Resurrection", search:"Dexter Resurrection 2025"}
       ]},
       { saga: "Wicked Minds", items: [
-        {label:"Wicked Minds S1", search:"Wicked Minds serie"},
-        {label:"Wicked Minds S2", search:"Wicked Minds serie"}
+        {label:"Wicked Minds S1", search:"Wicked Minds 2023 Netflix"},
+        {label:"Wicked Minds S2", search:"Wicked Minds 2023 Netflix"}
       ]},
       { saga: "No Limit", items: [
-        {label:"No Limit S1", search:"No Limit série française"},
-        {label:"No Limit S2", search:"No Limit série française"}
+        {label:"No Limit S1", search:"No Limit 2022 Netflix Camille Razat"},
+        {label:"No Limit S2", search:"No Limit 2022 Netflix Camille Razat"}
       ]},
       { saga: "Luke Cage", items: [
-        {label:"Luke Cage S1", search:"Luke Cage série Marvel"},
-        {label:"Luke Cage S2", search:"Luke Cage série Marvel"}
+        {label:"Luke Cage S1", search:"Luke Cage 2016 Netflix Marvel Mike Colter"},
+        {label:"Luke Cage S2", search:"Luke Cage 2016 Netflix Marvel Mike Colter"}
       ]},
       { saga: "Breaking Bad", items: [
-        {label:"Breaking Bad S1", search:"Breaking Bad AMC Walter White"},
-        {label:"Breaking Bad S2", search:"Breaking Bad AMC Walter White"},
-        {label:"Breaking Bad S3", search:"Breaking Bad AMC Walter White"},
-        {label:"Breaking Bad S4", search:"Breaking Bad AMC Walter White"},
-        {label:"Breaking Bad S5", search:"Breaking Bad AMC Walter White"}
+        {label:"Breaking Bad S1", search:"Breaking Bad 2008 AMC Bryan Cranston"},
+        {label:"Breaking Bad S2", search:"Breaking Bad 2008 AMC Bryan Cranston"},
+        {label:"Breaking Bad S3", search:"Breaking Bad 2008 AMC Bryan Cranston"},
+        {label:"Breaking Bad S4", search:"Breaking Bad 2008 AMC Bryan Cranston"},
+        {label:"Breaking Bad S5", search:"Breaking Bad 2008 AMC Bryan Cranston"}
       ]},
       { saga: "Peaky Blinders", items: [
-        {label:"Peaky Blinders S1", search:"Peaky Blinders série"},
-        {label:"Peaky Blinders S2", search:"Peaky Blinders série"},
-        {label:"Peaky Blinders S3", search:"Peaky Blinders série"},
-        {label:"Peaky Blinders S4", search:"Peaky Blinders série"},
-        {label:"Peaky Blinders S5", search:"Peaky Blinders série"},
-        {label:"Peaky Blinders S6", search:"Peaky Blinders série"}
+        {label:"Peaky Blinders S1", search:"Peaky Blinders 2013 BBC Cillian Murphy"},
+        {label:"Peaky Blinders S2", search:"Peaky Blinders 2013 BBC Cillian Murphy"},
+        {label:"Peaky Blinders S3", search:"Peaky Blinders 2013 BBC Cillian Murphy"},
+        {label:"Peaky Blinders S4", search:"Peaky Blinders 2013 BBC Cillian Murphy"},
+        {label:"Peaky Blinders S5", search:"Peaky Blinders 2013 BBC Cillian Murphy"},
+        {label:"Peaky Blinders S6", search:"Peaky Blinders 2013 BBC Cillian Murphy"}
       ]},
       { saga: "Suits - Dans la Cour des Grands", items: [
-        {label:"Suits S1", search:"Suits série TV"},
-        {label:"Suits S2", search:"Suits série TV"},
-        {label:"Suits S3", search:"Suits série TV"},
-        {label:"Suits S4", search:"Suits série TV"},
-        {label:"Suits S5", search:"Suits série TV"},
-        {label:"Suits S6", search:"Suits série TV"},
-        {label:"Suits S7", search:"Suits série TV"},
-        {label:"Suits S8", search:"Suits série TV"},
-        {label:"Suits S9", search:"Suits série TV"}
+        {label:"Suits S1", search:"Suits 2011 USA Network Gabriel Macht"},
+        {label:"Suits S2", search:"Suits 2011 USA Network Gabriel Macht"},
+        {label:"Suits S3", search:"Suits 2011 USA Network Gabriel Macht"},
+        {label:"Suits S4", search:"Suits 2011 USA Network Gabriel Macht"},
+        {label:"Suits S5", search:"Suits 2011 USA Network Gabriel Macht"},
+        {label:"Suits S6", search:"Suits 2011 USA Network Gabriel Macht"},
+        {label:"Suits S7", search:"Suits 2011 USA Network Gabriel Macht"},
+        {label:"Suits S8", search:"Suits 2011 USA Network Gabriel Macht"},
+        {label:"Suits S9", search:"Suits 2011 USA Network Gabriel Macht"}
       ]},
       { saga: "Le Jeu du Calmar (Squid Game)", items: [
-        {label:"Squid Game S1", search:"Squid Game série"},
-        {label:"Squid Game S2", search:"Squid Game série saison 2"}
+        {label:"Squid Game S1", search:"Squid Game 2021 Netflix Korean"},
+        {label:"Squid Game S2", search:"Squid Game 2021 Netflix Korean"}
       ]},
       { saga: "La Casa de Papel", items: [
-        {label:"La Casa de Papel S1", search:"La Casa de Papel série"},
-        {label:"La Casa de Papel S2", search:"La Casa de Papel série"},
-        {label:"La Casa de Papel S3", search:"La Casa de Papel série"},
-        {label:"La Casa de Papel S4", search:"La Casa de Papel série"},
-        {label:"La Casa de Papel S5", search:"La Casa de Papel série"}
+        {label:"La Casa de Papel S1", search:"Money Heist La Casa de Papel Netflix"},
+        {label:"La Casa de Papel S2", search:"Money Heist La Casa de Papel Netflix"},
+        {label:"La Casa de Papel S3", search:"Money Heist La Casa de Papel Netflix"},
+        {label:"La Casa de Papel S4", search:"Money Heist La Casa de Papel Netflix"},
+        {label:"La Casa de Papel S5", search:"Money Heist La Casa de Papel Netflix"}
       ]},
       { saga: "Lupin", items: [
-        {label:"Lupin S1", search:"Lupin série Netflix"},
-        {label:"Lupin S2", search:"Lupin série Netflix"},
-        {label:"Lupin S3", search:"Lupin série Netflix"}
+        {label:"Lupin S1", search:"Lupin 2021 Netflix Omar Sy"},
+        {label:"Lupin S2", search:"Lupin 2021 Netflix Omar Sy"},
+        {label:"Lupin S3", search:"Lupin 2021 Netflix Omar Sy"}
       ]},
       { saga: "Élite", items: [
-        {label:"Élite S1", search:"Elite série Netflix espagnole"},
-        {label:"Élite S2", search:"Elite série Netflix espagnole"},
-        {label:"Élite S3", search:"Elite série Netflix espagnole"},
-        {label:"Élite S4", search:"Elite série Netflix espagnole"},
-        {label:"Élite S5", search:"Elite série Netflix espagnole"},
-        {label:"Élite S6", search:"Elite série Netflix espagnole"},
-        {label:"Élite S7", search:"Elite série Netflix espagnole"},
-        {label:"Élite S8", search:"Elite série Netflix espagnole"}
+        {label:"Élite S1", search:"Elite 2018 Netflix Spanish school"},
+        {label:"Élite S2", search:"Elite 2018 Netflix Spanish school"},
+        {label:"Élite S3", search:"Elite 2018 Netflix Spanish school"},
+        {label:"Élite S4", search:"Elite 2018 Netflix Spanish school"},
+        {label:"Élite S5", search:"Elite 2018 Netflix Spanish school"},
+        {label:"Élite S6", search:"Elite 2018 Netflix Spanish school"},
+        {label:"Élite S7", search:"Elite 2018 Netflix Spanish school"},
+        {label:"Élite S8", search:"Elite 2018 Netflix Spanish school"}
       ]},
       { saga: "Outer Banks", items: [
-        {label:"Outer Banks S1", search:"Outer Banks Netflix série"},
-        {label:"Outer Banks S2", search:"Outer Banks Netflix série"},
-        {label:"Outer Banks S3", search:"Outer Banks Netflix série"},
-        {label:"Outer Banks S4", search:"Outer Banks Netflix série"},
-        {label:"Outer Banks S5 (à venir)", search:"Outer Banks Netflix saison 5 finale"}
+        {label:"Outer Banks S1", search:"Outer Banks 2020 Netflix Chase Stokes"},
+        {label:"Outer Banks S2", search:"Outer Banks 2020 Netflix Chase Stokes"},
+        {label:"Outer Banks S3", search:"Outer Banks 2020 Netflix Chase Stokes"},
+        {label:"Outer Banks S4", search:"Outer Banks 2020 Netflix Chase Stokes"},
+        {label:"Outer Banks S5 (à venir)", search:"Outer Banks 2020 Netflix Chase Stokes"}
       ]},
     ],
     "😂 Comédie": [
       { saga: "Big Bang Theory", items: [
-        {label:"Big Bang Theory S1", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S2", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S3", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S4", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S5", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S6", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S7", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S8", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S9", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S10", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S11", search:"The Big Bang Theory série"},
-        {label:"Big Bang Theory S12", search:"The Big Bang Theory série"}
+        {label:"Big Bang Theory S1", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S2", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S3", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S4", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S5", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S6", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S7", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S8", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S9", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S10", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S11", search:"The Big Bang Theory 2007 CBS Jim Parsons"},
+        {label:"Big Bang Theory S12", search:"The Big Bang Theory 2007 CBS Jim Parsons"}
       ]},
     ],
   }
