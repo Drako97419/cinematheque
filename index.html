@@ -316,36 +316,62 @@ const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
 let posterCache = {};
 try { posterCache = JSON.parse(localStorage.getItem('cinePosterCache_v3') || '{}'); } catch(e) {}
 
+// ── FILE D'ATTENTE TMDB (max 5 requêtes simultanées) ──
+let tmdbQueue = [];
+let tmdbActive = 0;
+const TMDB_MAX = 4;
+
+function tmdbEnqueue(fn) {
+  return new Promise((resolve) => {
+    tmdbQueue.push(() => fn().then(resolve).catch(() => resolve('')).finally(() => {
+      tmdbActive--;
+      tmdbNext();
+    }));
+    tmdbNext();
+  });
+}
+
+function tmdbNext() {
+  while (tmdbActive < TMDB_MAX && tmdbQueue.length > 0) {
+    tmdbActive++;
+    tmdbQueue.shift()();
+  }
+}
+
 async function fetchPoster(searchTitle, isSeries) {
   const cacheKey = searchTitle;
   if (posterCache[cacheKey] !== undefined) return posterCache[cacheKey];
-  try {
-    const type = isSeries ? 'tv' : 'movie';
-    const fallback = isSeries ? 'movie' : 'tv';
-    // Essai 1 : type principal
-    let url = `https://api.themoviedb.org/3/search/${type}?api_key=${TMDB_KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`;
-    let res = await fetch(url);
-    let data = await res.json();
-    let path = data.results?.[0]?.poster_path || null;
-    // Essai 2 : fallback si rien trouvé
-    if (!path) {
-      url = `https://api.themoviedb.org/3/search/${fallback}?api_key=${TMDB_KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`;
-      res = await fetch(url);
-      data = await res.json();
-      path = data.results?.[0]?.poster_path || null;
-    }
-    // Essai 3 : recherche multi (tous types)
-    if (!path) {
-      url = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`;
-      res = await fetch(url);
-      data = await res.json();
-      path = data.results?.find(r => r.poster_path)?.poster_path || null;
-    }
-    const full = path ? TMDB_IMG + path : '';
-    posterCache[cacheKey] = full;
-    try { localStorage.setItem('cinePosterCache_v3', JSON.stringify(posterCache)); } catch(e) {}
-    return full;
-  } catch { return ''; }
+  return tmdbEnqueue(async () => {
+    // Re-vérifier le cache au cas où une requête parallèle l'aurait déjà rempli
+    if (posterCache[cacheKey] !== undefined) return posterCache[cacheKey];
+    try {
+      const type = isSeries ? 'tv' : 'movie';
+      const fallback = isSeries ? 'movie' : 'tv';
+      // Essai 1 : type principal
+      let url = `https://api.themoviedb.org/3/search/${type}?api_key=${TMDB_KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`;
+      let res = await fetch(url);
+      let data = await res.json();
+      let path = data.results?.[0]?.poster_path || null;
+      // Essai 2 : fallback si rien trouvé
+      if (!path) {
+        url = `https://api.themoviedb.org/3/search/${fallback}?api_key=${TMDB_KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`;
+        res = await fetch(url);
+        data = await res.json();
+        path = data.results?.[0]?.poster_path || null;
+      }
+      // Essai 3 : recherche multi
+      if (!path) {
+        url = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`;
+        res = await fetch(url);
+        data = await res.json();
+        path = data.results?.find(r => r.poster_path)?.poster_path || null;
+      }
+      const full = path ? TMDB_IMG + path : '';
+      posterCache[cacheKey] = full;
+      try { localStorage.setItem('cinePosterCache_v3', JSON.stringify(posterCache)); } catch(e) {}
+      return full;
+    } catch { return ''; }
+  });
 }
 
 // ── GESTION VUE LISTE / CARTE ──
